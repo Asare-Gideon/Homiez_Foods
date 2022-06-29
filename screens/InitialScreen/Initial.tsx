@@ -18,7 +18,7 @@ const Initial = ({ navigation }: initallProp) => {
                 <View style={styles.contentHeaderTextCont}>
                     <Text style={styles.headerText}>Food You Love, </Text>
                     <Text style={styles.headerText}>Delivered to You</Text>
-                    <Text style={styles.paraText}>Order food from Homiez foods restourants and enjoy it anywhere, anytime</Text>
+                    <Text style={styles.paraText}>Order food from Homiez and enjoy it anywhere, anytime</Text>
                     <TouchableOpacity style={styles.btnCont} onPress={() => navigation.navigate("SignupScreen")} >
                         <Text style={styles.btnText}>Get Started</Text>
                     </TouchableOpacity>

@@ -61,7 +61,7 @@ const Agent = ({ navigation }: homeProp) => {
 
             <View style={styles.shareBtnCont}>
                 <TouchableOpacity style={styles.shareBtn} onPress={() => slideIn()}>
-                    <Text style={styles.shareBtnText}>Share</Text>
+                    <Text style={styles.shareBtnText}>Share & earned</Text>
                 </TouchableOpacity>
             </View>
             <Animated.View style={[styles.popupCont, { marginBottom: slideAnim }]}>

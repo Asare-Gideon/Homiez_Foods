@@ -13,6 +13,7 @@ import Help from '../screens/HelpScreen/Help';
 import OrderDetail from '../screens/PreviousOrderDetailsScreen/OrederDetail';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import Agent from '../screens/AgentScreen/Agent';
+import Map from '../screens/MapScreen/Map';
 
 
 const TransitionScreenOptions = {
@@ -36,6 +37,7 @@ const HomeStackNav = () => {
             <Stack.Screen name='Help' component={Help} />
             <Stack.Screen name='PreviousOrderDetail' component={OrderDetail} />
             <Stack.Screen name='AgentConsole' component={Agent} />
+            <Stack.Screen name='Map' component={Map} />
         </Stack.Navigator>
     )
 }

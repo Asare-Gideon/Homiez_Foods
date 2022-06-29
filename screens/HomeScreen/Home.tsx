@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, TextInput, ScrollView, FlatList, TouchableHighlight, Image } from 'react-native'
 import React, { useState } from 'react'
 import { homeStyle } from './homeStyle'
-import { AntDesign, Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons'
+import { AntDesign, Feather, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons'
 import { Colors } from '../../constants/Layout'
 import { categoriesData, itemData } from '../../constants/Data'
 import Categories from '../../components/Categories'
@@ -47,10 +47,17 @@ const Home = ({ navigation }: homeProp) => {
                     <View style={{ width: 150, height: 38 }}>
                         <Image source={images.logo} style={{ width: '100%', height: "100%" }} />
                     </View>
-                    <TouchableOpacity style={homeStyle.cartBtn} onPress={() => navigation.navigate("Carts")} >
-                        <Feather name='shopping-cart' size={18} />
-                        <Text style={homeStyle.cartNum}>2</Text>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: "row" }}>
+                        <TouchableOpacity onPress={() => navigation.navigate("Map")}>
+                            <FontAwesome name="map-marker" size={37} color={"white"} />
+                            <Text style={homeStyle.bage}>1</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={homeStyle.cartBtn} onPress={() => navigation.navigate("Carts")} >
+                            <Feather name='shopping-cart' size={18} />
+                            <Text style={homeStyle.cartNum}>2</Text>
+                        </TouchableOpacity>
+
+                    </View>
                 </View>
                 {/* Search goes here */}
                 <View style={homeStyle.searchContainer}>
@@ -79,13 +86,11 @@ const Home = ({ navigation }: homeProp) => {
                 </View>
                 {/*End Of Recent Container */}
 
-
-
                 {/*Categories */}
                 <View style={homeStyle.categoryHeaderCont}>
                     <Text style={homeStyle.catHeaderText}>Top Categories </Text>
                     <TouchableOpacity style={homeStyle.categoryHeaderBtn} onPress={() => navigation.navigate("AllCategories")} >
-                        <Text style={homeStyle.catBtnText}>View all </Text>
+                        <Text style={homeStyle.catBtnText}>View all foods</Text>
                         <AntDesign name='arrowright' size={18} />
                     </TouchableOpacity>
                 </View>

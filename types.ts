@@ -47,6 +47,7 @@ export type HomeParams = {
   Help: undefined;
   PreviousOrderDetail: undefined;
   AgentConsole: undefined;
+  Map: undefined;
 };
 export type initallProp = StackScreenProps<InitialParams, "InitialScreen">;
 export type InitialParams = {

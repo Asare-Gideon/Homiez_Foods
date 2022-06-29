@@ -55,19 +55,20 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         padding: 10,
-        borderBottomWidth: 0.3,
-        elevation: 1,
-        borderRadius: 10,
+        borderWidth: 0.3,
         marginBottom: 10,
+        borderRadius: 10
+
     },
     btnCont: {
         width: "100%",
-        height: Sizes.height / 1.5,
+        height: Sizes.height / 3.8,
         backgroundColor: Colors.white,
-        borderRadius: 20,
         elevation: 2,
         padding: 10,
-        paddingTop: 15
+        paddingTop: 15,
+        marginTop: 30,
+
     },
     main: {
         flex: 1,
@@ -77,8 +78,6 @@ const styles = StyleSheet.create({
     contentCont: {
         backgroundColor: Colors.warmWhite,
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
         paddingLeft: 15,
         paddingRight: 15
     },

@@ -29,6 +29,8 @@ interface dataType {
   validName: boolean;
 }
 const Signup = ({ navigation }: initallProp) => {
+  const [entry, setEntry] = useState(true)
+  const [entry2, setEntry2] = useState(true)
   const [data, setData] = useState<dataType>({
     phone: undefined,
     email: undefined,
@@ -44,7 +46,7 @@ const Signup = ({ navigation }: initallProp) => {
       <View style={styles.topCont}>
         <View style={styles.imgMain}>
           <View style={styles.imgSub}>
-            <Image source={images.categories[0]} style={styles.img} />
+            <Image source={images.logo} style={styles.img} />
           </View>
           <Text style={styles.topText}>Welcome!</Text>
         </View>
@@ -56,18 +58,8 @@ const Signup = ({ navigation }: initallProp) => {
       >
 
         <ScrollView style={{ height: "100%" }}>
-
           <View style={styles.inputContent}>
-            <FontAwesome style={styles.icons} name="envelope-o" size={20} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              value={data.email}
-              onChangeText={(e) => setData({ ...data, email: e })}
-            />
-          </View>
-          <View style={styles.inputContent}>
-            <AntDesign style={styles.icons} name="phone" size={20} />
+            <Feather style={styles.icons} name="phone" size={20} />
             <TextInput
               style={styles.input}
               placeholder="Enter your phone number"
@@ -82,17 +74,48 @@ const Signup = ({ navigation }: initallProp) => {
               placeholder="Enter your password"
               value={data.password}
               onChangeText={(e) => setData({ ...data, password: e })}
+              secureTextEntry={entry}
             />
+            {
+              entry ? (
+                <Animatable.View animation={"bounceIn"} duration={700}>
+                  <TouchableOpacity onPress={() => setEntry(prev => !prev)}>
+                    <Feather name="eye" size={24} />
+                  </TouchableOpacity>
+                </Animatable.View>
+              ) : (
+                <Animatable.View animation={"bounceIn"} duration={700}>
+                  <TouchableOpacity onPress={() => setEntry(prev => !prev)}>
+                    <Feather name="eye-off" size={24} />
+                  </TouchableOpacity>
+                </Animatable.View>
+              )
+            }
           </View>
           <View style={[styles.inputContent]}>
             <Feather style={styles.icons} name="lock" size={20} />
             <TextInput
               style={styles.input}
-              placeholder="Comfirm password"
+              placeholder="Confirm password"
               value={data.confirmPassword}
               onChangeText={(e) => setData({ ...data, confirmPassword: e })}
+              secureTextEntry={entry2}
             />
-
+            {
+              entry2 ? (
+                <Animatable.View animation={"bounceIn"} duration={700}>
+                  <TouchableOpacity onPress={() => setEntry2(prev => !prev)}>
+                    <Feather name="eye" size={24} />
+                  </TouchableOpacity>
+                </Animatable.View>
+              ) : (
+                <Animatable.View animation={"bounceIn"} duration={700}>
+                  <TouchableOpacity onPress={() => setEntry2(prev => !prev)}>
+                    <Feather name="eye-off" size={24} />
+                  </TouchableOpacity>
+                </Animatable.View>
+              )
+            }
           </View>
 
           <View style={{ marginTop: 13 }}>
@@ -187,22 +210,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   imgSub: {
-    width: 100,
-    height: 100,
-    borderWidth: 5,
-    borderColor: Colors.white,
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 60,
+    marginTop: 26
   },
   img: {
-    height: 75,
-    width: 75,
-    borderRadius: 50,
+    height: 60,
+    width: 250,
   },
   topText: {
     ...Fonts.h2,
     color: Colors.white,
+    marginTop: 20
   },
 });
 

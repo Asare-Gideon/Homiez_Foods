@@ -1,19 +1,16 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import store from './app/store/store';
 import Loader from './components/Loader';
 import useCachedResources from './hooks/useCachedResources';
 import HomeStackNav from './navigations/HomeStackNav';
 import InitialStack from './navigations/InitialStack';
-import Home from './screens/HomeScreen/Home';
 
 export default function App() {
   const isLoadingComplete = useCachedResources()
-  const [isLogedIn, setIsLogedIn] = useState(false)
+  const [isLogedIn, setIsLogedIn] = useState(true);
 
 
   if (!isLoadingComplete) {
@@ -43,4 +40,3 @@ export default function App() {
     }
   }
 }
-

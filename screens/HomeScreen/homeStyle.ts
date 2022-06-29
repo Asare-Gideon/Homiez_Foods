@@ -125,6 +125,7 @@ export const homeStyle = StyleSheet.create({
     paddingRight: 8,
     borderRadius: 5,
     alignItems: "center",
+    marginLeft: 20,
   },
   cartNum: {
     ...Fonts.body3,
@@ -138,5 +139,17 @@ export const homeStyle = StyleSheet.create({
   headerText: {
     ...Fonts.h2,
     color: Colors.warmWhite,
+  },
+  bage: {
+    position: "absolute",
+    backgroundColor: "#db190b",
+    color: Colors.white,
+    borderRadius: 20,
+    height: 20,
+    width: 20,
+    alignItems: "center",
+    textAlign: "center",
+    top: -12,
+    left: -5,
   },
 });
