@@ -118,7 +118,7 @@ export const homeStyle = StyleSheet.create({
     paddingTop: 5,
   },
   cartBtn: {
-    backgroundColor: Colors.secondary,
+    backgroundColor: Colors.red,
     flexDirection: "row",
     padding: 5,
     paddingLeft: 8,
@@ -151,5 +151,21 @@ export const homeStyle = StyleSheet.create({
     textAlign: "center",
     top: -12,
     left: -5,
+  },
+  modalFull: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    minHeight: "50%",
+    backgroundColor: "white",
+    elevation: 2,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

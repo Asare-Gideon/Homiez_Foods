@@ -14,15 +14,23 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
+    "assetBundlePatterns": ["**/*"],
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "/assets/logo-no-bg.png",
+          "color": "#ffffff",
+          "sounds": ["./assets/sound/new-order-alert.mp3"]
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "config": {
-        "googleMaps":{
+        "googleMaps": {
           "apiKey": "AIzaSyC-tLlsTucUW3ZDVqHJBfImnepvPttEOrw"
         }
       },

@@ -11,8 +11,9 @@ export type postStackNavParams = {
 };
 export interface categoriesProp {
   title: string;
-  toggle: boolean;
-  handle: any;
+  id: string;
+  active: string;
+  handle: (id: string) => void;
   image: ImageSourcePropType;
 }
 export type categoriesDataTyp = {
@@ -22,32 +23,50 @@ export type categoriesDataTyp = {
   image: ImageSourcePropType;
 }[];
 export interface cartsProp {
-  image: ImageSourcePropType;
+  image: string;
   title: string;
-  text: string;
   price: number;
-  order: boolean;
+  quantity: number;
+  id: string;
 }
 export interface itemProp {
+  id: string;
   image: ImageSourcePropType;
   title: string;
   price: number;
+  available?: boolean;
   like?: boolean;
+  includes?: string[];
   navigation: StackNavigationProp<HomeParams, "Home">;
 }
 export type HomeParams = {
   Home: undefined;
   Carts: undefined;
   AllCategories: undefined;
-  Detail: undefined;
+  Detail: {
+    selectedFood: string;
+    //id: string;
+    //imgURL: string;
+    //name: string;
+    //price: number;
+    //includes?: string;
+  };
   Order: undefined;
   Account: undefined;
   PreviousOrders: undefined;
   ChangeInfo: undefined;
   Help: undefined;
-  PreviousOrderDetail: undefined;
+  PreviousOrderDetail: {
+    selectedOrder: string;
+  };
+  ProcessPreviousOrder: {
+    prevOrder: string;
+  };
   AgentConsole: undefined;
   Map: undefined;
+  InitialScreen: undefined;
+  SignupScreen: undefined;
+  LoginScreen: undefined;
 };
 export type initallProp = StackScreenProps<InitialParams, "InitialScreen">;
 export type InitialParams = {
@@ -62,3 +81,7 @@ export type headerProp = {
   title: string;
   navigation: StackNavigationProp<HomeParams, "Home">;
 };
+
+export enum notificationTypes {
+  order,
+}

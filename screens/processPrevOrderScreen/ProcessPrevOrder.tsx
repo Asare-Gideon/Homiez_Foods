@@ -7,13 +7,14 @@ import {
   Image,
   ActivityIndicator,
   BackHandler,
+  TextInput,
   Pressable,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { orderStyle } from "./orderStyle";
 import Header from "../../components/Header";
 import { homeProp, notificationTypes } from "../../types";
-import { ScrollView, TextInput } from "react-native-gesture-handler";
+import { ScrollView } from "react-native-gesture-handler";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Colors, Fonts } from "../../constants/Layout";
 import { useAppDispatch, useAppSelector } from "../../app/reduxHooks/hooks";
@@ -28,21 +29,24 @@ import { Button } from "react-native-elements";
 import useFirebaseAuth from "../../hooks/useFirebaseAuth";
 import axios from "../../app/axios";
 import MapView from "react-native-maps";
-import SnackBar from "react-native-snackbar-component";
-import { schedulePushNotification } from "../../app/utils";
 import useNotificationToken from "../../hooks/useNotificationToken";
+import { schedulePushNotification } from "../../app/utils";
 
-const Order = ({ navigation }: homeProp) => {
+const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
   const { user, completed, error: authError } = useFirebaseAuth();
   const dispatch = useAppDispatch();
-  const carts = useAppSelector(selectCarts);
+  const [cartItems, setCartItems] = useState<Partial<cartItemType[]>>([]);
   const [cartTotalAmount, setCartTotalAmount] = useState(0);
   const [payManualLoading, setPayManualLoading] = useState(false);
   const [error, setError] = useState("");
   const [newOrder, setNewOrder] = useState<orderType | null>(null);
+  const [loading, setLoading] = useState(true);
   const [locationModal, setLocationModal] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationStreet, setLocationStreet] = useState("");
+  const { notification, response: notificationReponse } =
+    useNotificationToken();
+
   const [locationLngLat, setLocationLgnLat] = useState<{
     longitude: number;
     latitude: number;
@@ -51,24 +55,14 @@ const Order = ({ navigation }: homeProp) => {
     timer: undefined,
     last: 0,
   });
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const { notification, response: notificationReponse } =
-    useNotificationToken();
 
   useEffect(() => {
-    const totalAmount = carts.reduce((p, c, indx) => {
-      return p + c.price * c.quantity;
+    const totalAmount = cartItems.reduce((p, c, indx) => {
+      if (c) return p + c.price * c.quantity;
+      return p;
     }, 0);
     setCartTotalAmount(totalAmount);
-  }, [carts]);
-
-  useEffect(() => {
-    if (error) setSnackbarMessage(error);
-  }, [error]);
-
-  useEffect(() => {
-    if (completed && !user) navigation.navigate("LoginScreen");
-  }, [completed, user]);
+  }, [cartItems]);
 
   useEffect(() => {
     if (notification) {
@@ -78,6 +72,22 @@ const Order = ({ navigation }: homeProp) => {
       }
     }
   }, [notification]);
+
+  useEffect(() => {
+    setLoading(true);
+    setCartItems(JSON.parse((route.params as any).prevOrder));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (completed && !user) navigation.navigate("LoginScreen");
+  }, [completed, user]);
+
+  useEffect(() => {
+    if (!loading && !cartItems.length) {
+      navigation.navigate("Home");
+    }
+  }, [loading, cartItems]);
 
   useEffect(() => {
     if (notificationReponse) {
@@ -121,6 +131,7 @@ const Order = ({ navigation }: homeProp) => {
           );
           setLocationLoading(false);
           if (res.data.error) return setError(res.data.error);
+          console.log(res.data);
           setLocationLgnLat({
             longitude: res.data.geometry.location.lng,
             latitude: res.data.geometry.location.lat,
@@ -139,18 +150,18 @@ const Order = ({ navigation }: homeProp) => {
   }, [locationStreet]);
 
   const handlePayManually = async () => {
-    if (locationStreet && locationLngLat) {
+    if (locationStreet && locationLngLat && cartItems) {
       setPayManualLoading(true);
-      const foods: { id: string; quantity: number }[] = carts.map((c) => ({
-        id: c.id,
-        quantity: c.quantity,
+      const foods: { id: string; quantity: number }[] = cartItems.map((c) => ({
+        id: c?.id || "",
+        quantity: c?.quantity || 1,
       }));
       const res = await dispatch(
         placeOrderManual({ foods, locationStreet, locationLngLat })
       );
       setPayManualLoading(false);
       if (res.meta.requestStatus === "rejected")
-        return setError("There was any error, please try again");
+        return setError((res as any).error.message);
       const newOrder = res.payload;
       dispatch(clearCart());
       schedulePushNotification(
@@ -169,7 +180,7 @@ const Order = ({ navigation }: homeProp) => {
       setError("Set Location before proceed");
     }
   };
-  const renderCartsItem = ({ item }: { item: cartItemType }) => (
+  const renderCartsItem = ({ item }: { item: any }) => (
     <View style={orderStyle.summary}>
       <Text style={orderStyle.text}>{item.name}</Text>
       <View style={orderStyle.disheCont}>
@@ -183,19 +194,9 @@ const Order = ({ navigation }: homeProp) => {
       </View>
     </View>
   );
-
+  //
   return (
     <>
-      <SnackBar
-        visible={Boolean(snackbarMessage)}
-        textMessage={snackbarMessage}
-        backgroundColor={error ? "red" : "green"}
-        accentColor="white"
-        actionHandler={() => {
-          setSnackbarMessage("");
-        }}
-        actionText="Close"
-      />
       {Boolean(newOrder) && (
         <>
           <View
@@ -352,8 +353,7 @@ const Order = ({ navigation }: homeProp) => {
                     borderColor: Colors.darkgray,
                     borderWidth: 1,
                     borderRadius: 5,
-                    paddingRight: 25,
-                    paddingLeft: 10,
+                    paddingHorizontal: 10,
                     fontSize: 18,
                   }}
                 />
@@ -361,7 +361,7 @@ const Order = ({ navigation }: homeProp) => {
                   <View
                     style={{
                       position: "absolute",
-                      right: 10,
+                      right: 0,
                       top: 10,
                     }}
                   >
@@ -375,6 +375,7 @@ const Order = ({ navigation }: homeProp) => {
                 })}
                 onPress={() => {
                   setLocationModal(false);
+                  console.log("hello");
                 }}
               >
                 <MaterialIcons name="check" size={38} color={Colors.primary} />
@@ -397,9 +398,9 @@ const Order = ({ navigation }: homeProp) => {
       )}
       <View style={orderStyle.main}>
         <View style={orderStyle.header}>
-          <Header title="Order" navigation={navigation} />
+          <Header title="Your Last Order" navigation={navigation} />
         </View>
-        {completed && user ? (
+        {completed && user && !loading && cartItems.length ? (
           <>
             <ScrollView style={orderStyle.contentContainer}>
               <Button
@@ -414,8 +415,8 @@ const Order = ({ navigation }: homeProp) => {
               <View>
                 <FlatList
                   renderItem={renderCartsItem}
-                  data={carts}
-                  keyExtractor={(item) => item.id}
+                  data={cartItems}
+                  keyExtractor={(item, indx) => item?.id || indx.toString()}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 100 }}
                 />
@@ -434,9 +435,7 @@ const Order = ({ navigation }: homeProp) => {
                     disabled={!locationLngLat || !locationStreet}
                     style={[
                       orderStyle.orderBtn,
-                      {
-                        opacity: !locationLngLat || !locationStreet ? 0.5 : 1,
-                      },
+                      { opacity: !locationLngLat || !locationStreet ? 0.5 : 1 },
                     ]}
                     onPress={() => handlePayManually()}
                   >
@@ -462,11 +461,11 @@ const Order = ({ navigation }: homeProp) => {
               backgroundColor: Colors.white,
             }}
           >
-            <ActivityIndicator animating color={"#222"} size={32} />
+            <ActivityIndicator size={32} color="#222" animating />
           </View>
         )}
       </View>
     </>
   );
 };
-export default Order;
+export default ProcessPrevOrder;
