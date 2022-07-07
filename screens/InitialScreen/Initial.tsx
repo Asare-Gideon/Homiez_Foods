@@ -3,10 +3,13 @@ import React from "react";
 import { Colors, Fonts, Sizes } from "../../constants/Layout";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import images from "../../constants/Images";
-import { initallProp } from "../../types";
+import { homeProp, initallProp } from "../../types";
+import { useAppDispatch } from "../../app/reduxHooks/hooks";
+import { setIsFirstVisit } from "../../features/appConfig/appConfigSlice";
 const AnimatedLottieView = require("lottie-react-native");
 
-const Initial = ({ navigation }: initallProp) => {
+const Initial = ({ navigation }: homeProp) => {
+  const dispatch = useAppDispatch();
   return (
     <View style={styles.main}>
       <View style={styles.header}>
@@ -23,7 +26,10 @@ const Initial = ({ navigation }: initallProp) => {
           </Text>
           <TouchableOpacity
             style={styles.btnCont}
-            onPress={() => navigation.navigate("LoginScreen")}
+            onPress={() => {
+              dispatch(setIsFirstVisit(false));
+              navigation.navigate("Home");
+            }}
           >
             <Text style={styles.btnText}>Get Started</Text>
           </TouchableOpacity>

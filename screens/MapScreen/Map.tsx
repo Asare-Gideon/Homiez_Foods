@@ -96,6 +96,7 @@ const Map = ({ navigation }: homeProp) => {
         <Marker
           pinColor={Colors.red}
           title="Homiez Restaurant"
+          image={require("../../assets/images/restaurant_80x80.jpg")}
           coordinate={{
             longitude: fromLocation.longitude,
             latitude: fromLocation.latitude,

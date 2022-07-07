@@ -7,6 +7,7 @@ import {
 //import { setupListeners } from '@reduxjs/toolkit/query'
 import { persistStore, persistReducer } from "redux-persist";
 import {
+  appConfigReducer,
   authReducer,
   cartsReducer,
   categoriesReducer,
@@ -20,7 +21,7 @@ import bottomNavigation from "../../features/utilitySlice/bottomSlice";
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: [],
+  whitelist: ["foods", "categories", "orders", "appConfig", "carts"],
 };
 
 const rootReducer = combineReducers({
@@ -31,6 +32,7 @@ const rootReducer = combineReducers({
   carts: cartsReducer,
   orders: ordersReducer,
   auth: authReducer,
+  appConfig: appConfigReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

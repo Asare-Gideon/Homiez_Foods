@@ -31,6 +31,7 @@ import axios from "../../app/axios";
 import MapView from "react-native-maps";
 import useNotificationToken from "../../hooks/useNotificationToken";
 import { schedulePushNotification } from "../../app/utils";
+import { StackActions } from "@react-navigation/native";
 
 const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
   const { user, completed, error: authError } = useFirebaseAuth();
@@ -68,7 +69,11 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
     if (notification) {
       const notificationData = notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.navigate("PreviousOrders");
+        navigation.dispatch(
+          StackActions.replace("PreviousOrders", {
+            fromOrders: true,
+          })
+        );
       }
     }
   }, [notification]);
@@ -85,7 +90,9 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
 
   useEffect(() => {
     if (!loading && !cartItems.length) {
-      navigation.navigate("Home");
+      setTimeout(() => {
+        if (!loading && !cartItems.length) navigation.navigate("Home");
+      }, 1000);
     }
   }, [loading, cartItems]);
 
@@ -95,28 +102,14 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
       const notificationData =
         notificationReponse.notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.navigate("PreviousOrders");
+        navigation.dispatch(
+          StackActions.replace("PreviousOrders", {
+            fromOrders: true,
+          })
+        );
       }
     }
   }, [notificationReponse]);
-
-  useEffect(() => {
-    const backHandler = () => {
-      setLocationModal(false);
-      if (locationModal) {
-        setLocationModal(false);
-        return true;
-      }
-      return false;
-    };
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backHandler
-    );
-    return () => {
-      handler.remove();
-    };
-  }, []);
 
   useEffect(() => {
     if (locationStreet) {
@@ -131,7 +124,6 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
           );
           setLocationLoading(false);
           if (res.data.error) return setError(res.data.error);
-          console.log(res.data);
           setLocationLgnLat({
             longitude: res.data.geometry.location.lng,
             latitude: res.data.geometry.location.lat,
@@ -312,7 +304,11 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
                     }}
                     onPress={() => {
                       setNewOrder(null);
-                      navigation.navigate("PreviousOrders");
+                      navigation.dispatch(
+                        StackActions.replace("PreviousOrders", {
+                          fromOrders: true,
+                        })
+                      );
                     }}
                   />
                 </View>
@@ -322,13 +318,19 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
         </>
       )}
       {locationModal && (
-        <Modal transparent animationType="fade">
+        <Modal
+          transparent
+          onRequestClose={() => {
+            setLocationModal(false);
+          }}
+          animationType="fade"
+        >
           <View
             style={{
               width: "100%",
               height: "100%",
-              marginTop: 35,
-              backgroundColor: "white",
+              marginTop: 60,
+              backgroundColor: "#fff",
               position: "relative",
               zIndex: 50,
             }}
@@ -338,6 +340,8 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
+                alignSelf: "center",
+                elevation: 2,
                 paddingHorizontal: 10,
               }}
             >
@@ -350,6 +354,7 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
                     height: 50,
                     width: "100%",
                     color: Colors.black,
+                    backgroundColor: "white",
                     borderColor: Colors.darkgray,
                     borderWidth: 1,
                     borderRadius: 5,
@@ -398,7 +403,10 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
       )}
       <View style={orderStyle.main}>
         <View style={orderStyle.header}>
-          <Header title="Your Last Order" navigation={navigation} />
+          <Header
+            title={locationModal ? "Your Location" : "Your Last Order"}
+            navigation={navigation}
+          />
         </View>
         {completed && user && !loading && cartItems.length ? (
           <>

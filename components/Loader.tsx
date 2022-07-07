@@ -6,9 +6,7 @@ import images from "../constants/Images";
 const Loader = () => {
   return (
     <View style={styles.main}>
-      <View style={styles.content}>
-        <ActivityIndicator animating color={Colors.red} size={28} />
-      </View>
+      <ActivityIndicator animating color={Colors.red} size={38} />
     </View>
   );
 };
@@ -18,13 +16,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: Sizes.height,
     width: Sizes.width,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.white,
     alignItems: "center",
     justifyContent: "center",
-  },
-  content: {
-    height: Sizes.height / 2.5,
-    width: Sizes.width / 2,
   },
 });
 export default Loader;

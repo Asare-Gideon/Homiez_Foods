@@ -140,6 +140,22 @@ const slice = createSlice({
     ) => {
       state.lastUpdate = action.payload;
     },
+    cleanOrders: (state) => {
+      // orders: [{ data: [], page: 1, lastUpdate: 0 }],
+      // lastUpdate: {
+      //   nanoseconds: 0,
+      //   seconds: 0,
+      // },
+      // lastDoc: null,
+      // lastPage: 1,
+      state.lastDoc = null;
+      state.lastPage = 1;
+      state.lastUpdate = {
+        nanoseconds: 0,
+        seconds: 0,
+      };
+      state.orders = [{ data: [], page: 1, lastUpdate: 0 }];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -184,7 +200,7 @@ const slice = createSlice({
   },
 });
 
-export const { setLastUpdate } = slice.actions;
+export const { setLastUpdate, cleanOrders } = slice.actions;
 
 export const selectOrders = (page: number) => {
   return (state: RootState) => {

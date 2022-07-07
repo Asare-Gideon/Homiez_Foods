@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "115752947956",
+    "project_id": "homiezfoods",
+    "storage_bucket": "homiezfoods.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:115752947956:android:eb4898b861b029bccb8ea1",
+        "android_client_info": {
+          "package_name": "com.snowbird.homiezfoods"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "115752947956-nbleth06rqnblpi5knbggfl1sv19mcsc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0nAK5uaFUU9XUsV_LoENN2RInk3FrU24"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "115752947956-nbleth06rqnblpi5knbggfl1sv19mcsc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

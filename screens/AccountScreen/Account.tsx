@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Colors, Fonts, Sizes } from "../../constants/Layout";
 import Header from "../../components/Header";
 import { homeProp } from "../../types";
@@ -9,16 +9,23 @@ import useFirebaseAuth from "../../hooks/useFirebaseAuth";
 import { signOut } from "firebase/auth";
 import { auth } from "../../app/Firebase";
 import { Button } from "react-native-elements";
+import { useAppDispatch, useAppSelector } from "../../app/reduxHooks/hooks";
+import { cleanOrders } from "../../features/orders/OrdersSlice";
+import { selectAppVersion } from "../../features/appConfig/appConfigSlice";
 
 const Account = ({ navigation }: homeProp) => {
+  const dispatch = useAppDispatch();
   const { user, completed, error } = useFirebaseAuth();
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const appVersion = useAppSelector(selectAppVersion);
 
   const handleLogout = async () => {
     setLogoutLoading(true);
     await signOut(auth);
+    dispatch(cleanOrders());
     setLogoutLoading(false);
   };
+
   if (error) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -41,7 +48,11 @@ const Account = ({ navigation }: homeProp) => {
               <View style={styles.btnCont}>
                 <TouchableOpacity
                   style={styles.btn}
-                  onPress={() => navigation.navigate("PreviousOrders")}
+                  onPress={() =>
+                    navigation.navigate("PreviousOrders", {
+                      fromOrders: false,
+                    })
+                  }
                 >
                   <View style={styles.btnTextCont}>
                     <AntDesign
@@ -76,10 +87,10 @@ const Account = ({ navigation }: homeProp) => {
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.btn}
+                  style={[styles.btn]}
                   onPress={() => navigation.navigate("Help")}
                 >
-                  <View style={styles.btnTextCont}>
+                  <View style={[styles.btnTextCont, { marginBottom: 10 }]}>
                     <Feather
                       name="help-circle"
                       size={24}
@@ -93,6 +104,9 @@ const Account = ({ navigation }: homeProp) => {
                     color={Colors.deepDarkGray}
                   />
                 </TouchableOpacity>
+                <View style={styles.btn}>
+                  <Text>App Version - {appVersion}</Text>
+                </View>
               </View>
               <Button
                 buttonStyle={{
@@ -178,7 +192,7 @@ const styles = StyleSheet.create({
   },
   btnCont: {
     width: "100%",
-    height: Sizes.height / 3.8,
+    height: 300,
     backgroundColor: Colors.white,
     elevation: 2,
     paddingHorizontal: 10,

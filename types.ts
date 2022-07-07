@@ -53,7 +53,9 @@ export type HomeParams = {
   };
   Order: undefined;
   Account: undefined;
-  PreviousOrders: undefined;
+  PreviousOrders: {
+    fromOrders?: boolean;
+  };
   ChangeInfo: undefined;
   Help: undefined;
   PreviousOrderDetail: {

@@ -10,6 +10,8 @@ import {
   Image,
   Modal,
   ActivityIndicator,
+  TouchableHighlight,
+  Pressable,
 } from "react-native";
 import { AntDesign, FontAwesome, Fontisto, Ionicons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
@@ -19,6 +21,7 @@ import SnackBar from "react-native-snackbar-component";
 import {
   FirebaseRecaptchaVerifierModal,
   FirebaseRecaptchaBanner,
+  FirebaseRecaptchaVerifier,
 } from "expo-firebase-recaptcha";
 import Button from "../../components/Button";
 import images from "../../constants/Images";
@@ -35,9 +38,10 @@ import {
 import InputCode from "../../components/InputCode";
 import useFirebaseAuth from "../../hooks/useFirebaseAuth";
 import axios from "../../app/axios";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const Login = ({ navigation }: homeProp) => {
-  const recaptchaRef = useRef(null);
+  const recaptchaRef = useRef<FirebaseRecaptchaVerifierModal>(null);
   const [verificationId, setVerificationId] = useState("");
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
@@ -53,6 +57,7 @@ const Login = ({ navigation }: homeProp) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const sendVerification = async () => {
+    setError("");
     setVerificationLoading(true);
     const phoneProvider = new PhoneAuthProvider(auth);
     try {
@@ -62,6 +67,7 @@ const Login = ({ navigation }: homeProp) => {
       );
       setVerificationId(verificationId);
       setVerificationLoading(false);
+      recaptchaRef.current?._reset();
     } catch (err) {
       setError("A problem was encountered, please try again");
       setVerificationLoading(false);
@@ -70,6 +76,7 @@ const Login = ({ navigation }: homeProp) => {
   };
 
   const handleCreateAccount = async (code: string) => {
+    setError("");
     setVerificationLoading(true);
     if (verificationId) {
       try {
@@ -165,6 +172,19 @@ const Login = ({ navigation }: homeProp) => {
         <Modal animationType="slide" transparent>
           <View style={styles.modalFull}>
             <View style={styles.modalContent}>
+              <Pressable
+                onPress={() => {
+                  setVerificationId("");
+                }}
+                style={({ pressed }) => ({
+                  position: "absolute",
+                  right: 3,
+                  top: 3,
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <AntDesign name="close" size={28} color="#333" />
+              </Pressable>
               <Text style={{ ...Fonts.h2 }}>Verify Mobile Number</Text>
               <InputCode
                 label="Enter Verification Code"
@@ -172,6 +192,18 @@ const Login = ({ navigation }: homeProp) => {
                 loading={verificationLoading}
                 onComplete={handleCreateAccount}
               />
+              {!verificationLoading && (
+                <Pressable
+                  style={({ pressed }) => {
+                    return {
+                      opacity: pressed ? 0.5 : 1,
+                    };
+                  }}
+                  onPress={sendVerification}
+                >
+                  <Text style={{ color: "blue" }}>Resend</Text>
+                </Pressable>
+              )}
               {verificationLoading && (
                 <ActivityIndicator
                   size={28}

@@ -33,39 +33,42 @@ const useNotificationToken = () => {
       if (completed) {
         setLoading(true);
         registerForPushNotificationsAsync().then(async (token) => {
-          const q = query(
-            collection(db, "expoTokens"),
-            where("token", "==", token)
-          );
-          const tokenRes = await getDocs(q);
-          console.log("empty ============> ", tokenRes.empty);
-          dispatch(setExpoToken(token));
-          if (!tokenRes.empty) {
-            try {
-              const data = tokenRes.docs[0].data();
-              if (!data.uid && user) {
-                await setDoc(
-                  tokenRes.docs[0].ref,
-                  {
-                    uid: user.uid,
-                  },
-                  { merge: true }
-                );
-                setTokenIsSaved(true);
+          console.log(token);
+          try {
+            const q = query(
+              collection(db, "expoTokens"),
+              where("token", "==", token)
+            );
+            const tokenRes = await getDocs(q);
+            console.log("empty ============> ", tokenRes.empty);
+            dispatch(setExpoToken(token));
+            if (!tokenRes.empty) {
+              try {
+                const data = tokenRes.docs[0].data();
+                if (!data.uid && user) {
+                  await setDoc(
+                    tokenRes.docs[0].ref,
+                    {
+                      uid: user.uid,
+                    },
+                    { merge: true }
+                  );
+                  setTokenIsSaved(true);
+                }
+              } catch (err) {
+                console.log("expo token =========> ", err);
               }
-            } catch (err) {
-              console.log("expo token =========> ", err);
+            } else {
+              try {
+                await addDoc(collection(db, "expoTokens"), {
+                  token,
+                  ...(user && { uid: user.uid }),
+                });
+              } catch (err) {
+                console.log(err);
+              }
             }
-          } else {
-            try {
-              await addDoc(collection(db, "expoTokens"), {
-                token,
-                ...(user && { uid: user.uid }),
-              });
-            } catch (err) {
-              console.log(err);
-            }
-          }
+          } catch {}
         });
       }
       Notifications.setNotificationHandler({

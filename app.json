@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Homiez_Food",
-    "slug": "Homiez_Food",
+    "name": "Homiez Foods",
+    "slug": "Homiez_Foods",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -19,28 +19,30 @@
       [
         "expo-notifications",
         {
-          "icon": "/assets/logo-no-bg.png",
+          "icon": "./assets/images/icon.png",
           "color": "#ffffff",
-          "sounds": ["./assets/sound/new-order-alert.mp3"]
+          "sounds": ["./assets/sounds/new-order-alert.mp3"]
         }
       ]
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.snowbird.homiezfoods",
+      "buildNumber": "1.0.0"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyC-tLlsTucUW3ZDVqHJBfImnepvPttEOrw"
         }
       },
+      "package": "com.snowbird.homiezfoods",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ea580c"
+        "backgroundColor": "#ffffff"
       }
-    },
-    "web": {
-      "favicon": "./assets/images/favicon.png"
     }
   }
 }

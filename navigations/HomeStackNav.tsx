@@ -21,6 +21,8 @@ import Login from "../screens/LoginScreen/Login";
 import Signup from "../screens/SignupScreen/Signup";
 import Initial from "../screens/InitialScreen/Initial";
 import ProcessPrevOrder from "../screens/processPrevOrderScreen/ProcessPrevOrder";
+import { useAppSelector } from "../app/reduxHooks/hooks";
+import { selectIsFirstVisit } from "../features/appConfig/appConfigSlice";
 
 const TransitionScreenOptions = {
   ...TransitionPresets.SlideFromRightIOS,
@@ -29,10 +31,12 @@ const TransitionScreenOptions = {
 const Stack = createStackNavigator<HomeParams>();
 
 const HomeStackNav = () => {
+  const isFirstVisit = useAppSelector(selectIsFirstVisit);
+  console.log("isFirstVisit =========> ", isFirstVisit);
   return (
     <Stack.Navigator
       screenOptions={TransitionScreenOptions}
-      initialRouteName="Home"
+      initialRouteName={isFirstVisit ? "InitialScreen" : "Home"}
     >
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="Carts" component={Carts} />

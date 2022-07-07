@@ -5,6 +5,7 @@ import {
   FlatList,
   TouchableHighlightBase,
   TouchableHighlight,
+  BackHandler,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { cartStyle } from "./cartStyle";
@@ -16,8 +17,10 @@ import { useAppSelector } from "../../app/reduxHooks/hooks";
 import { cartItemType, selectCarts } from "../../features/cart/cartSlice";
 import { Colors, Fonts } from "../../constants/Layout";
 import { MaterialIcons } from "@expo/vector-icons";
+import { StackActions, useIsFocused } from "@react-navigation/native";
 
 const Carts = ({ navigation }: homeProp) => {
+  const isFocused = useIsFocused();
   const carts = useAppSelector(selectCarts);
   const [cartTotalAmount, setCartTotalAmount] = useState(0);
 
@@ -27,6 +30,16 @@ const Carts = ({ navigation }: homeProp) => {
     }, 0);
     setCartTotalAmount(totalAmount);
   }, [carts]);
+  useEffect(() => {
+    const handler = () => {
+      navigation.dispatch(StackActions.replace("Home"));
+      return true;
+    };
+    BackHandler.addEventListener("hardwareBackPress", handler);
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handler);
+    };
+  }, [isFocused]);
   const renderCartsItem = ({ item }: { item: cartItemType }) => (
     <CartsItem
       id={item.id}

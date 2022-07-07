@@ -9,8 +9,10 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  Alert,
+  Linking,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { homeStyle } from "./homeStyle";
 import {
   AntDesign,
@@ -18,7 +20,7 @@ import {
   FontAwesome,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { Colors, Fonts } from "../../constants/Layout";
+import { Colors, Fonts, Sizes } from "../../constants/Layout";
 import Categories from "../../components/Categories";
 import images from "../../constants/Images";
 import Items from "../../components/Items";
@@ -44,6 +46,7 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../../app/Firebase";
 import { Button } from "react-native-elements";
 import {
+  cleanOrders,
   getOrders,
   orderType,
   selectPreviousOrder,
@@ -60,6 +63,10 @@ import {
 } from "firebase/firestore";
 import SnackBar from "react-native-snackbar-component";
 import useNotificationToken from "../../hooks/useNotificationToken";
+import {
+  selectAppVersion,
+  setAppVersion,
+} from "../../features/appConfig/appConfigSlice";
 
 const Home = ({ navigation, route }: homeProp) => {
   const isFocused = useIsFocused();
@@ -82,6 +89,7 @@ const Home = ({ navigation, route }: homeProp) => {
     timer: undefined,
     last: 0,
   });
+  const [foodsHaveMore, setFoodsHaveMore] = useState(foods.items.length >= 9);
   const [inWorkingHoursLoading, setInWorkingHoursLoading] = useState(true);
   const [inWorkingHours, setInWorkingHours] = useState(false);
   const [foodCategoriesLastUpdate, setFoodCategoriesLastUpdate] = useState(0);
@@ -91,6 +99,7 @@ const Home = ({ navigation, route }: homeProp) => {
   const previousOrder = useAppSelector(selectPreviousOrder);
   const [foodCategoriesLoading, setfoodCategoriesLoading] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const appVersion = useAppSelector(selectAppVersion);
   const [ordersLastUpdate, setOrdersLastUpdate] = useState<number>(0);
   const { notification, response: notificationReponse } =
     useNotificationToken();
@@ -111,7 +120,9 @@ const Home = ({ navigation, route }: homeProp) => {
     if (notification) {
       const notificationData = notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.navigate("PreviousOrders");
+        navigation.navigate("PreviousOrders", {
+          fromOrders: true,
+        });
       }
     }
   }, [notification]);
@@ -121,7 +132,9 @@ const Home = ({ navigation, route }: homeProp) => {
       const notificationData =
         notificationReponse.notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.navigate("PreviousOrders");
+        navigation.navigate("PreviousOrders", {
+          fromOrders: true,
+        });
       }
     }
   }, [notificationReponse]);
@@ -133,8 +146,20 @@ const Home = ({ navigation, route }: homeProp) => {
       const data = res.data;
       setInWorkingHours(data.inWorkingHours);
       setInWorkingHoursLoading(false);
+      if (data?.appVersion !== appVersion && data?.appUrl) {
+        Alert.alert("Update Available", "New App Version Available", [
+          {
+            text: "Update",
+            onPress: () => {
+              Linking.openURL(data.appUrl);
+            },
+          },
+        ]);
+        return;
+      }
+      if (data?.appVersion) dispatch(setAppVersion(data?.appVersion));
     })();
-  }, [isFocused]);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -170,7 +195,7 @@ const Home = ({ navigation, route }: homeProp) => {
         );
       }
     })();
-  }, [page, lastUpdateComplete, dispatch, ordersLastUpdate]);
+  }, [page, lastUpdateComplete, ordersLastUpdate, isFocused]);
 
   useEffect(() => {
     if (search) {
@@ -209,7 +234,7 @@ const Home = ({ navigation, route }: homeProp) => {
       setOrdersLastUpdate(globals?.ordersLastUpdate);
       setLastUpdateComplete(true);
     })();
-  }, [navigation, route.path, isFocused]);
+  }, [isFocused]);
 
   useEffect(() => {
     if (error) setSnackbarMessage(error);
@@ -226,6 +251,7 @@ const Home = ({ navigation, route }: homeProp) => {
 
   const handleOnScrollBottomFoods = async () => {
     if (foodsLoading) return;
+    if (!foodsHaveMore) return;
     setFoodsLoading(true);
     await dispatch(
       getFoods({
@@ -243,6 +269,7 @@ const Home = ({ navigation, route }: homeProp) => {
   const handleLogout = async () => {
     setLogoutLoading(true);
     await signOut(auth);
+    dispatch(cleanOrders());
     setLogoutLoading(false);
   };
 
@@ -278,15 +305,20 @@ const Home = ({ navigation, route }: homeProp) => {
             quantity: item.quantity,
           }));
         } else {
-          setError("No User Logged In");
+          return setError("No User Logged In");
         }
       } catch (err) {
         console.log(err);
       }
     }
-    navigation.navigate("ProcessPreviousOrder", {
-      prevOrder: JSON.stringify(prevOrderCart),
-    });
+    if (prevOrderCart) {
+      navigation.navigate("ProcessPreviousOrder", {
+        prevOrder: JSON.stringify(prevOrderCart),
+      });
+    } else {
+      setError("There are no previous orders linked to this account");
+      return;
+    }
   };
 
   const renderCategories = ({
@@ -376,10 +408,9 @@ const Home = ({ navigation, route }: homeProp) => {
               renderItem={({ item, index }) =>
                 renderCategories({ item, index, allCatsModal: true })
               }
-              columnWrapperStyle={{ margin: 2 }}
+              numColumns={1}
               data={categories}
               keyExtractor={(item) => item.id}
-              numColumns={2}
               showsHorizontalScrollIndicator={false}
             />
           </View>
@@ -535,66 +566,91 @@ const Home = ({ navigation, route }: homeProp) => {
         </View>
         {/*End Of Recent Container */}
 
-        {/*Categories */}
-        <View style={homeStyle.categoryHeaderCont}>
-          <Text style={homeStyle.catHeaderText}>Top Categories </Text>
-          <TouchableOpacity
-            style={homeStyle.categoryHeaderBtn}
-            onPress={() => setShowAllCategories(true)}
-          >
-            <Text style={homeStyle.catBtnText}>View all Categories</Text>
-            <AntDesign name="arrowright" size={18} />
-          </TouchableOpacity>
-        </View>
-        {/*Category scroll */}
-        <View style={{ paddingLeft: 10, flexDirection: "row" }}>
-          <FlatList
-            renderItem={renderCategories}
-            data={categories}
-            keyExtractor={(item) => item.id}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          />
-        </View>
-        {/* End of Category scroll */}
-
-        {/* Recommended categories */}
-        <View>
-          <Text style={homeStyle.recomText}>
-            {search
-              ? search
-              : categoryActive
-              ? categories.find((c) => c.id === categoryActive)?.name
-              : "All Foods"}
-          </Text>
-          {!!search && !searchFoods.length && (
+        {foodsLoading ||
+          (foodCategoriesLoading && (
             <View
               style={{
-                marginTop: 20,
-                alignItems: "center",
-                justifyContent: "center",
                 flex: 1,
+                width: "100%",
+                height: Sizes.height / 2,
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              <MaterialCommunityIcons
-                size={48}
-                name="food-off-outline"
-                color={"red"}
-              />
-              <Text>No Food Found</Text>
+              <ActivityIndicator size={38} color={"#000"} animating />
             </View>
-          )}
-          <FlatList
-            renderItem={renderItems}
-            onEndReachedThreshold={5}
-            data={!searchFoods.length && !search ? foods.items : searchFoods}
-            keyExtractor={(item) => item.id}
-            onEndReached={handleOnScrollBottomFoods}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={homeStyle.itemsContainer}
-          />
-        </View>
+          ))}
+        {!foodCategoriesLoading && !foodsLoading && (
+          /*Categories */
+          <>
+            <View style={homeStyle.categoryHeaderCont}>
+              <Text style={homeStyle.catHeaderText}>Top Categories </Text>
+              <TouchableOpacity
+                style={homeStyle.categoryHeaderBtn}
+                onPress={() => setShowAllCategories(true)}
+              >
+                <Text style={homeStyle.catBtnText}>View all Categories</Text>
+                <AntDesign name="arrowright" size={18} />
+              </TouchableOpacity>
+            </View>
+            {/*Category scroll */}
+            <View style={{ paddingLeft: 10, flexDirection: "row" }}>
+              <FlatList
+                renderItem={renderCategories}
+                data={categories}
+                keyExtractor={(item) => item.id}
+                horizontal={true}
+                showsHorizontalScrollIndicator={false}
+              />
+            </View>
+            {/* End of Category scroll */
+            /* Recommended categories */}
+            <View>
+              <Text style={homeStyle.recomText}>
+                {search
+                  ? search
+                  : categoryActive
+                  ? categories.find((c) => c.id === categoryActive)?.name
+                  : "All Foods"}
+              </Text>
+              {!!search && !searchFoods.length && (
+                <View
+                  style={{
+                    marginTop: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flex: 1,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    size={48}
+                    name="food-off-outline"
+                    color={"red"}
+                  />
+                  <Text>No Food Found</Text>
+                </View>
+              )}
+              <FlatList
+                renderItem={renderItems}
+                onEndReachedThreshold={5}
+                data={
+                  !searchFoods.length && !search ? foods.items : searchFoods
+                }
+                keyExtractor={(item) => item.id}
+                onEndReached={handleOnScrollBottomFoods}
+                numColumns={2}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={[
+                  homeStyle.itemsContainer,
+                  {
+                    paddingBottom: 35,
+                    marginBottom: 20,
+                  },
+                ]}
+              />
+            </View>
+          </>
+        )}
       </ScrollView>
 
       <View style={homeStyle.cartsBtnCont}>

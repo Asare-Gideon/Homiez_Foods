@@ -117,7 +117,12 @@ const Change = ({ navigation }: homeProp) => {
           <View>
             <View style={styles.infoCont}>
               <Text style={styles.infoText}>Username</Text>
-              <Text style={styles.infoText}>{user?.username}</Text>
+              <Text
+                numberOfLines={1}
+                style={[styles.infoText, { flex: 1, paddingLeft: 10 }]}
+              >
+                {user?.username}
+              </Text>
               <TouchableOpacity
                 onPress={() =>
                   setForm({
@@ -152,7 +157,12 @@ const Change = ({ navigation }: homeProp) => {
           <View>
             <View style={styles.infoCont}>
               <Text style={styles.infoText}>Phone Number</Text>
-              <Text style={styles.infoText}>{user?.phone}</Text>
+              <Text
+                numberOfLines={1}
+                style={[styles.infoText, { flex: 1, paddingLeft: 10 }]}
+              >
+                {user?.phone}
+              </Text>
               <TouchableOpacity
                 onPress={() =>
                   setForm({
@@ -187,7 +197,12 @@ const Change = ({ navigation }: homeProp) => {
           <View>
             <View style={styles.infoCont}>
               <Text style={styles.infoText}>Your Email</Text>
-              <Text style={styles.infoText}>{user?.email}</Text>
+              <Text
+                numberOfLines={1}
+                style={[styles.infoText, { flex: 1, paddingLeft: 10 }]}
+              >
+                {user?.email}
+              </Text>
               <TouchableOpacity
                 onPress={() =>
                   setForm({

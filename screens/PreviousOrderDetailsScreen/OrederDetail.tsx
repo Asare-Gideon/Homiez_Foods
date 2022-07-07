@@ -48,7 +48,11 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
 
             <View style={{ justifyContent: "center", alignContent: "center" }}>
               <Text
-                style={{ ...Fonts.h3, fontWeight: "bold", textAlign: "center" }}
+                style={{
+                  ...Fonts.body4,
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
               >
                 Order Id
               </Text>
@@ -91,7 +95,7 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
             >
               <Text
                 style={{
-                  ...Fonts.h4,
+                  ...Fonts.body3,
                 }}
               >
                 Name
@@ -111,7 +115,7 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
             >
               <Text
                 style={{
-                  ...Fonts.h4,
+                  ...Fonts.body3,
                 }}
               >
                 Phone Number
@@ -131,7 +135,7 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
             >
               <Text
                 style={{
-                  ...Fonts.h4,
+                  ...Fonts.body3,
                 }}
               >
                 Delivery Location
@@ -151,7 +155,7 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
             >
               <Text
                 style={{
-                  ...Fonts.h4,
+                  ...Fonts.body3,
                 }}
               >
                 Distance From Us
@@ -169,7 +173,7 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
             >
               <Text
                 style={{
-                  ...Fonts.h4,
+                  ...Fonts.body3,
                 }}
               >
                 AVG Ride Duration
@@ -187,7 +191,7 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
             >
               <Text
                 style={{
-                  ...Fonts.h4,
+                  ...Fonts.body3,
                 }}
               >
                 Status
@@ -207,7 +211,7 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
         <View>
           <Text
             style={{
-              ...Fonts.h3,
+              ...Fonts.body4,
               fontWeight: "bold",
               textAlign: "center",
               marginBottom: 5,

@@ -4,12 +4,14 @@ import {
   StyleSheet,
   FlatList,
   TouchableHighlight,
+  ActivityIndicator,
+  BackHandler,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import { homeProp } from "../../types";
 import { Colors, Fonts, Sizes } from "../../constants/Layout";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -25,11 +27,13 @@ import axios from "../../app/axios";
 import { auth } from "../../app/Firebase";
 import { getIdToken, User } from "firebase/auth";
 import moment from "moment";
+import { StackActions, useIsFocused } from "@react-navigation/native";
 
-const PreviousOrder = ({ navigation }: homeProp) => {
+const PreviousOrder = ({ navigation, route }: homeProp) => {
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
   const orders = useAppSelector(selectOrders(1));
+  const isFocused = useIsFocused();
   const [lastUpdateComplete, setLastUpdateComplete] = useState(false);
   const [ordersLastUpdate, setOrdersLastUpdate] = useState<number>(0);
   const [selectedOrder, setSelectedOrder] = useState("");
@@ -39,6 +43,8 @@ const PreviousOrder = ({ navigation }: homeProp) => {
   const [error, setError] = useState("");
   const [searchOrders, setSearchOrders] = useState<orderType[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [hasMoreOrders, setHasMoreOrders] = useState(orders.length >= 9);
+  const isFromOrders = (route.params as any)?.fromOrders;
 
   useEffect(() => {
     (async () => {
@@ -65,15 +71,29 @@ const PreviousOrder = ({ navigation }: homeProp) => {
     })();
   }, []);
 
+  useEffect(() => {
+    const handler = () => {
+      if (isFromOrders) {
+        navigation.dispatch(StackActions.replace("Carts"));
+        return true;
+      }
+      return false;
+    };
+    BackHandler.addEventListener("hardwareBackPress", handler);
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handler);
+    };
+  }, [isFocused]);
+
   const handleOnScrolledToEnd = async () => {
-    setLoading(true);
+    if (loading) return;
+    if (!hasMoreOrders) return;
     await dispatch(
       getOrders({
         lastUpdate: ordersLastUpdate,
         page: page,
       })
     );
-    setLoading(false);
   };
 
   const handleSearch = () => {
@@ -103,24 +123,26 @@ const PreviousOrder = ({ navigation }: homeProp) => {
       }
     >
       <View style={styles.summary}>
-        <Text style={styles.headerText}>Order Summary</Text>
-        <Text style={styles.disheText}>Order {item.id}</Text>
+        <Text style={[styles.headerText, { fontSize: 15 }]}>Order Summary</Text>
+        <Text style={[styles.disheText, { fontSize: 13 }]}>
+          Order {item.id}
+        </Text>
         {item.items.map((it) => (
           <View style={styles.disheCont}>
-            <Text style={styles.disheText}>
+            <Text style={[styles.disheText, { fontSize: 13 }]}>
               {it.foodName} x {it.quantity}
             </Text>
           </View>
         ))}
 
         <View>
-          <Text style={styles.disheText}>
+          <Text style={[styles.disheText, { fontSize: 13 }]}>
             {moment.unix(item.createdAt.seconds).format("llll")}
           </Text>
         </View>
         <View style={styles.disheCont}>
-          <Text style={styles.disheText}>Total price</Text>
-          <Text style={styles.disheText}>
+          <Text style={[styles.disheText, { fontSize: 13 }]}>Total price</Text>
+          <Text style={[styles.disheText, { fontSize: 13 }]}>
             ₵
             {item && item?.hasRefCode
               ? item.totalPrice + 1 + 0.2
@@ -145,14 +167,45 @@ const PreviousOrder = ({ navigation }: homeProp) => {
         <Header title="Previous Orders" navigation={navigation} />
       </View>
       <View style={styles.ContentCont}>
-        <FlatList
-          renderItem={renderOrders}
-          data={orders}
-          onEndReached={handleOnScrolledToEnd}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 30 }}
-        />
+        {loading && (
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              flex: 1,
+              width: "100%",
+            }}
+          >
+            <ActivityIndicator size={28} color={Colors.black} animating />
+          </View>
+        )}
+        {!!orders.length && !loading && (
+          <FlatList
+            renderItem={renderOrders}
+            data={orders}
+            onEndReached={handleOnScrolledToEnd}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 30 }}
+          />
+        )}
+        {!loading && !orders.length && (
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              flex: 1,
+              width: "100%",
+            }}
+          >
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={72}
+              color={Colors.darkgray}
+            />
+            <Text style={{ ...Fonts.h3 }}>No Orders Made</Text>
+          </View>
+        )}
       </View>
     </View>
   );

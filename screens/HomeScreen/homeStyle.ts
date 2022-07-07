@@ -6,7 +6,7 @@ export const homeStyle = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 30,
+    bottom: 20,
     zIndex: 2222,
   },
   viewCartsBent: {

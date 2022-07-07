@@ -16,6 +16,7 @@ const Categories = ({ title, active, handle, image, id }: categoriesProp) => {
         alignItems: "center",
         borderRadius: 15,
         marginRight: 10,
+        marginBottom: 2,
         elevation: 2,
         borderBottomWidth: 0.2,
       }}

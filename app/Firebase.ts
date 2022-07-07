@@ -5,7 +5,7 @@ import { connectStorageEmulator, getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDKnD-Z31YFqJSHEZ7eCNkZUEPowNjGtWc",
-  authDomain: "homiezfoods.firebaseapp.com",
+  authDomain: "homiezfoods.com",
   projectId: "homiezfoods",
   storageBucket: "homiezfoods.appspot.com",
   messagingSenderId: "115752947956",
@@ -17,11 +17,11 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 //connectAuthEmulator(auth, "http://10.0.2.2:9099");
-connectAuthEmulator(auth, "http://localhost:9099");
+//connectAuthEmulator(auth, "http://localhost:9099");
 export const db = getFirestore(app);
 // connectFirestoreEmulator(db, "10.0.2.2", 8080);
-connectFirestoreEmulator(db, "localhost", 8080);
+//connectFirestoreEmulator(db, "localhost", 8080);
 export const storage = getStorage(app);
 //connectStorageEmulator(storage, "10.0.2.2", 9199);
-connectStorageEmulator(storage, "localhost", 9199);
+//connectStorageEmulator(storage, "localhost", 9199);
 export const firebaseApp = getApp();

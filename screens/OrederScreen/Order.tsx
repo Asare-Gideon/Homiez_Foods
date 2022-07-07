@@ -31,8 +31,9 @@ import MapView from "react-native-maps";
 import SnackBar from "react-native-snackbar-component";
 import { schedulePushNotification } from "../../app/utils";
 import useNotificationToken from "../../hooks/useNotificationToken";
+import { StackActions, useIsFocused } from "@react-navigation/native";
 
-const Order = ({ navigation }: homeProp) => {
+const Order = ({ navigation, route }: homeProp) => {
   const { user, completed, error: authError } = useFirebaseAuth();
   const dispatch = useAppDispatch();
   const carts = useAppSelector(selectCarts);
@@ -74,7 +75,11 @@ const Order = ({ navigation }: homeProp) => {
     if (notification) {
       const notificationData = notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.navigate("PreviousOrders");
+        navigation.dispatch(
+          StackActions.replace("PreviousOrders", {
+            fromOrders: true,
+          })
+        );
       }
     }
   }, [notification]);
@@ -85,28 +90,14 @@ const Order = ({ navigation }: homeProp) => {
       const notificationData =
         notificationReponse.notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.navigate("PreviousOrders");
+        navigation.dispatch(
+          StackActions.replace("PreviousOrders", {
+            fromOrders: true,
+          })
+        );
       }
     }
   }, [notificationReponse]);
-
-  useEffect(() => {
-    const backHandler = () => {
-      setLocationModal(false);
-      if (locationModal) {
-        setLocationModal(false);
-        return true;
-      }
-      return false;
-    };
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backHandler
-    );
-    return () => {
-      handler.remove();
-    };
-  }, []);
 
   useEffect(() => {
     if (locationStreet) {
@@ -311,7 +302,11 @@ const Order = ({ navigation }: homeProp) => {
                     }}
                     onPress={() => {
                       setNewOrder(null);
-                      navigation.navigate("PreviousOrders");
+                      navigation.dispatch(
+                        StackActions.replace("PreviousOrders", {
+                          fromOrders: true,
+                        })
+                      );
                     }}
                   />
                 </View>
@@ -321,13 +316,19 @@ const Order = ({ navigation }: homeProp) => {
         </>
       )}
       {locationModal && (
-        <Modal transparent animationType="fade">
+        <Modal
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            setLocationModal(false);
+          }}
+        >
           <View
             style={{
               width: "100%",
               height: "100%",
-              marginTop: 35,
-              backgroundColor: "white",
+              marginTop: 60,
+              backgroundColor: "#fff",
               position: "relative",
               zIndex: 50,
             }}
@@ -397,7 +398,10 @@ const Order = ({ navigation }: homeProp) => {
       )}
       <View style={orderStyle.main}>
         <View style={orderStyle.header}>
-          <Header title="Order" navigation={navigation} />
+          <Header
+            title={locationModal ? "Your Location" : "Order"}
+            navigation={navigation}
+          />
         </View>
         {completed && user ? (
           <>

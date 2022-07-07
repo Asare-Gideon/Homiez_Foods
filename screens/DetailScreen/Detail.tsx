@@ -65,7 +65,6 @@ const Detail = ({ navigation, route }: homeProp) => {
     }
   };
 
-  console.log("selected food ========> ", selectedFood);
   const renderItems = ({ item }: { item: foodType }) => (
     <Items
       id={item.id}
@@ -101,7 +100,9 @@ const Detail = ({ navigation, route }: homeProp) => {
       </View>
       <ScrollView style={detailStyle.contentCont}>
         <View style={detailStyle.headerCont}>
-          <Text style={detailStyle.itemName}>{selectedFood?.name}</Text>
+          <Text style={[detailStyle.itemName, { paddingRight: 10 }]}>
+            {selectedFood?.name}
+          </Text>
           <TouchableHighlight
             style={[
               detailStyle.addCartBtn,
@@ -133,7 +134,7 @@ const Detail = ({ navigation, route }: homeProp) => {
             </Text>
           ))}
         </View>
-        <View>
+        {/* <View>
           {likableFoods && (
             <>
               <Text style={detailStyle.likeText}>You may also like</Text>
@@ -147,7 +148,7 @@ const Detail = ({ navigation, route }: homeProp) => {
               />
             </>
           )}
-        </View>
+        </View> */}
       </ScrollView>
       <View style={detailStyle.cartsBtnCont}>
         <TouchableHighlight
