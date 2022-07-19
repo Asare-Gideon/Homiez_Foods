@@ -18,7 +18,6 @@ const Categories = ({ title, active, handle, image, id }: categoriesProp) => {
         marginRight: 10,
         marginBottom: 2,
         elevation: 2,
-        borderBottomWidth: 0.2,
       }}
     >
       <Image
@@ -28,6 +27,7 @@ const Categories = ({ title, active, handle, image, id }: categoriesProp) => {
       <Text
         style={{
           ...Fonts.body2,
+          fontSize: 12,
           marginLeft: 5,
           color: id === active ? Colors.white : Colors.darkgray,
         }}

@@ -1,32 +1,63 @@
-import { View, Text, FlatList, Image } from "react-native";
+import { View, Text, FlatList, Image, BackHandler } from "react-native";
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
-import { homeProp } from "../../types";
+import { homeProp, paymentMethods } from "../../types";
 import { ScrollView } from "react-native-gesture-handler";
 import { AntDesign } from "@expo/vector-icons";
 import { Colors, Fonts } from "../../constants/Layout";
 import { orderStyle } from "../OrederScreen/orderStyle";
 import { orderType } from "../../features/orders/OrdersSlice";
 import moment from "moment";
+import { useIsFocused } from "@react-navigation/native";
 
 const OrderDetail = ({ navigation, route }: homeProp) => {
+  const isFocused = useIsFocused();
   const [order, setOrder] = useState<orderType | null>(null);
+  const [isFromOrders, setIsFromOrders] = useState(false);
 
   useEffect(() => {
     setOrder(JSON.parse((route.params as any).selectedOrder));
+    setIsFromOrders((route.params as any).isFromOrders || false);
   }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      if (isFromOrders) {
+        navigation.pop(3);
+        return true;
+      }
+      return false;
+    };
+    BackHandler.addEventListener("hardwareBackPress", handler);
+
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handler);
+    };
+  }, [isFocused, isFromOrders]);
   console.log(order);
   const renderCartsItem = ({ item }: { item: any }) => (
     <View style={orderStyle.summary}>
-      <Text style={orderStyle.text}>
+      <Text style={[orderStyle.text, { fontSize: 14 }]}>
         {item.foodName} x {item.quantity}
       </Text>
       <View style={orderStyle.disheCont}>
-        <Text style={orderStyle.text}>Price</Text>
-        <Text style={orderStyle.text}>{item.price}</Text>
+        <Text style={[orderStyle.text, { fontSize: 13 }]}>Price</Text>
+        <Text style={[orderStyle.text, { fontSize: 13 }]}>{item.price}</Text>
       </View>
       <View style={orderStyle.check}>
-        <AntDesign name="checkcircle" color={Colors.primary} size={18} />
+        <AntDesign
+          name="checkcircle"
+          color={
+            order?.completed
+              ? "green"
+              : order?.failed
+              ? Colors.red
+              : order?.ongoing
+              ? Colors.primary
+              : "#aaa"
+          }
+          size={18}
+        />
       </View>
     </View>
   );
@@ -140,8 +171,34 @@ const OrderDetail = ({ navigation, route }: homeProp) => {
               >
                 Delivery Location
               </Text>
-              <Text style={{ paddingHorizontal: 8 }}>
+              <Text style={{ paddingHorizontal: 8, maxWidth: 200 }}>
                 {order?.location?.locationStreet}
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                width: "100%",
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+              }}
+            >
+              <Text
+                style={{
+                  ...Fonts.body3,
+                }}
+              >
+                Payment Method
+              </Text>
+              <Text numberOfLines={2} style={{ paddingHorizontal: 8 }}>
+                {order?.method && order.method === paymentMethods.agent
+                  ? "Agent Account"
+                  : order?.method === paymentMethods.electronic
+                  ? "Momo"
+                  : (order?.method === paymentMethods.manual &&
+                      "On Delivery") ||
+                    ""}
               </Text>
             </View>
             <View

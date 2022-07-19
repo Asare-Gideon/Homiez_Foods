@@ -49,6 +49,7 @@ import {
   cleanOrders,
   getOrders,
   orderType,
+  selectOrders,
   selectPreviousOrder,
   selectProcessingOrders,
 } from "../../features/orders/OrdersSlice";
@@ -72,6 +73,7 @@ const Home = ({ navigation, route }: homeProp) => {
   const isFocused = useIsFocused();
   const dispatch = useAppDispatch();
   const processingOrders = useAppSelector(selectProcessingOrders);
+  const orders = useAppSelector(selectOrders(1));
   const carts = useAppSelector(selectCarts);
   const { user, completed } = useFirebaseAuth();
   const [lastUpdateComplete, setLastUpdateComplete] = useState(false);
@@ -106,6 +108,7 @@ const Home = ({ navigation, route }: homeProp) => {
 
   useEffect(() => {
     (async () => {
+      if (!categories.length) setfoodCategoriesLoading(true);
       setfoodCategoriesLoading(true);
       if (lastUpdateComplete) {
         await dispatch(
@@ -115,6 +118,10 @@ const Home = ({ navigation, route }: homeProp) => {
       }
     })();
   }, [lastUpdateComplete, dispatch, foodCategoriesLastUpdate, isFocused]);
+
+  useEffect(() => {
+    if (lastUpdateComplete) if (!orders.length) dispatch(cleanOrders());
+  }, [lastUpdateComplete]);
 
   useEffect(() => {
     if (notification) {
@@ -163,7 +170,7 @@ const Home = ({ navigation, route }: homeProp) => {
 
   useEffect(() => {
     (async () => {
-      setChangeCategoryLoading(true);
+      if (!foods.items.length) setFoodsLoading(true);
       if (lastUpdateComplete) {
         await dispatch(
           getFoods({
@@ -173,7 +180,7 @@ const Home = ({ navigation, route }: homeProp) => {
           })
         );
       }
-      setChangeCategoryLoading(false);
+      setFoodsLoading(false);
     })();
   }, [
     lastUpdateComplete,
@@ -195,7 +202,7 @@ const Home = ({ navigation, route }: homeProp) => {
         );
       }
     })();
-  }, [page, lastUpdateComplete, ordersLastUpdate, isFocused]);
+  }, [page, lastUpdateComplete, ordersLastUpdate]);
 
   useEffect(() => {
     if (search) {
@@ -528,7 +535,9 @@ const Home = ({ navigation, route }: homeProp) => {
       <ScrollView style={homeStyle.contentContainer}>
         {user && (
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={{ ...Fonts.h5, padding: 10 }}>Welcome,</Text>
+            <Text style={{ ...Fonts.h5, padding: 10, fontSize: 14 }}>
+              Welcome,
+            </Text>
             <Text style={{ ...Fonts.body5, fontSize: 14 }}>
               {user.username || user.email || user.phone}
             </Text>
@@ -540,7 +549,7 @@ const Home = ({ navigation, route }: homeProp) => {
             style={homeStyle.recentBtn}
             onPress={handleProcessPreviousOrder}
           >
-            <AntDesign name="retweet" size={25} color={Colors.deepDarkGray} />
+            <AntDesign name="retweet" size={18} color={Colors.deepDarkGray} />
             <Text style={homeStyle.recentText}>Repeat Last order</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -549,7 +558,7 @@ const Home = ({ navigation, route }: homeProp) => {
           >
             <MaterialCommunityIcons
               name="account-outline"
-              size={25}
+              size={18}
               color={Colors.deepDarkGray}
             />
             <Text style={homeStyle.recentText}>Account</Text>
@@ -559,40 +568,25 @@ const Home = ({ navigation, route }: homeProp) => {
               style={homeStyle.recentBtn}
               onPress={() => navigation.navigate("AgentConsole")}
             >
-              <Feather name="share-2" size={25} color={Colors.deepDarkGray} />
+              <Feather name="share-2" size={18} color={Colors.deepDarkGray} />
               <Text style={homeStyle.recentText}>Agent Console</Text>
             </TouchableOpacity>
           )}
         </View>
         {/*End Of Recent Container */}
-
-        {foodsLoading ||
-          (foodCategoriesLoading && (
-            <View
-              style={{
-                flex: 1,
-                width: "100%",
-                height: Sizes.height / 2,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <ActivityIndicator size={38} color={"#000"} animating />
-            </View>
-          ))}
+        <View style={homeStyle.categoryHeaderCont}>
+          <Text style={homeStyle.catHeaderText}>Categories </Text>
+          <TouchableOpacity
+            style={homeStyle.categoryHeaderBtn}
+            onPress={() => setShowAllCategories(true)}
+          >
+            <Text style={homeStyle.catBtnText}>View all</Text>
+            <AntDesign name="arrowright" size={18} />
+          </TouchableOpacity>
+        </View>
         {!foodCategoriesLoading && !foodsLoading && (
           /*Categories */
           <>
-            <View style={homeStyle.categoryHeaderCont}>
-              <Text style={homeStyle.catHeaderText}>Top Categories </Text>
-              <TouchableOpacity
-                style={homeStyle.categoryHeaderBtn}
-                onPress={() => setShowAllCategories(true)}
-              >
-                <Text style={homeStyle.catBtnText}>View all Categories</Text>
-                <AntDesign name="arrowright" size={18} />
-              </TouchableOpacity>
-            </View>
             {/*Category scroll */}
             <View style={{ paddingLeft: 10, flexDirection: "row" }}>
               <FlatList
@@ -654,7 +648,7 @@ const Home = ({ navigation, route }: homeProp) => {
       </ScrollView>
 
       <View style={homeStyle.cartsBtnCont}>
-        {foodsLoading && (
+        {(foodsLoading || foodCategoriesLoading) && (
           <ActivityIndicator
             animating
             size={28}

@@ -11,7 +11,7 @@ import {
 import { auth, db } from "../../app/Firebase";
 import axios from "../../app/axios";
 
-const numInPage = 12;
+const numInPage = 6;
 export const getOrdersApi = async (
   page: number,
   userId: string,
@@ -56,9 +56,10 @@ export const getOrdersApi = async (
   }
 };
 
-export const placeOrderManualApi = async (data: {
+export const placeOrderApi = async (data: {
   foods: { id: string; quantity: number }[];
   locationStreet: string;
+  agentPay?: boolean;
   locationLngLat: {
     longitude: number;
     latitude: number;
@@ -67,14 +68,27 @@ export const placeOrderManualApi = async (data: {
   try {
     if (auth.currentUser) {
       const token = await getIdToken(auth.currentUser);
-      const res = await axios.post("/users/orderAndPayManually", {
-        token,
-        foods: data.foods,
-        location: {
-          locationStreet: data.locationStreet,
-          locationLngLat: data.locationLngLat,
-        },
-      });
+      let res;
+      if (data.agentPay) {
+        res = await axios.post("/users/agentPayWithAccount", {
+          token,
+          foods: data.foods,
+          location: {
+            locationStreet: data.locationStreet,
+            locationLngLat: data.locationLngLat,
+          },
+        });
+      } else {
+        res = await axios.post("/users/orderAndPayManually", {
+          token,
+          foods: data.foods,
+          location: {
+            locationStreet: data.locationStreet,
+            locationLngLat: data.locationLngLat,
+          },
+        });
+      }
+
       if (res.data.error) throw res.data.error;
       return res.data;
     } else {

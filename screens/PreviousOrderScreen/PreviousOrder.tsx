@@ -6,16 +6,14 @@ import {
   TouchableHighlight,
   ActivityIndicator,
   BackHandler,
+  TextInput,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import { homeProp } from "../../types";
 import { Colors, Fonts, Sizes } from "../../constants/Layout";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAppDispatch, useAppSelector } from "../../app/reduxHooks/hooks";
 import {
   getOrders,
@@ -27,39 +25,59 @@ import axios from "../../app/axios";
 import { auth } from "../../app/Firebase";
 import { getIdToken, User } from "firebase/auth";
 import moment from "moment";
-import { StackActions, useIsFocused } from "@react-navigation/native";
+import { useIsFocused } from "@react-navigation/native";
+import { selectUserData } from "../../features/auth/AuthSlice";
+import { Button } from "react-native-elements";
 
+const numInPage = 6;
 const PreviousOrder = ({ navigation, route }: homeProp) => {
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
-  const orders = useAppSelector(selectOrders(1));
+  const orders = useAppSelector(selectOrders(page));
   const isFocused = useIsFocused();
   const [lastUpdateComplete, setLastUpdateComplete] = useState(false);
   const [ordersLastUpdate, setOrdersLastUpdate] = useState<number>(0);
-  const [selectedOrder, setSelectedOrder] = useState("");
   const { user, completed } = useFirebaseAuth();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const userData = useAppSelector(selectUserData);
+  const [totalOrders, setTotalOrders] = useState(userData?.ordersCount || 1);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchOrders, setSearchOrders] = useState<orderType[]>([]);
+  const [displayedOrders, setDispayedOrders] = useState<orderType[]>(orders);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [hasMoreOrders, setHasMoreOrders] = useState(orders.length >= 9);
   const isFromOrders = (route.params as any)?.fromOrders;
 
   useEffect(() => {
     (async () => {
       if (lastUpdateComplete) {
-        setLoading(true);
+        if (!orders.length) setLoading(true);
         await dispatch(
           getOrders({
             lastUpdate: ordersLastUpdate,
-            page: page,
+            page,
           })
         );
         setLoading(false);
       }
     })();
-  }, [page, lastUpdateComplete, dispatch, ordersLastUpdate]);
+  }, [page, lastUpdateComplete, ordersLastUpdate]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (isFromOrders) {
+        navigation.pop(2);
+        return true;
+      }
+      return false;
+    };
+    BackHandler.addEventListener("hardwareBackPress", handler);
+
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", handler);
+    };
+  }, [isFocused, isFromOrders]);
 
   useEffect(() => {
     (async () => {
@@ -72,29 +90,30 @@ const PreviousOrder = ({ navigation, route }: homeProp) => {
   }, []);
 
   useEffect(() => {
-    const handler = () => {
-      if (isFromOrders) {
-        navigation.dispatch(StackActions.replace("Carts"));
-        return true;
-      }
-      return false;
-    };
-    BackHandler.addEventListener("hardwareBackPress", handler);
-    return () => {
-      BackHandler.removeEventListener("hardwareBackPress", handler);
-    };
-  }, [isFocused]);
+    let numPages =
+      totalOrders > numInPage ? Math.ceil(totalOrders / numInPage) : 1;
+    setTotalPages(numPages);
+  }, [totalOrders, userData]);
 
-  const handleOnScrolledToEnd = async () => {
-    if (loading) return;
-    if (!hasMoreOrders) return;
-    await dispatch(
-      getOrders({
-        lastUpdate: ordersLastUpdate,
-        page: page,
-      })
-    );
-  };
+  useEffect(() => {
+    if (!!searchOrders.length) {
+      setDispayedOrders(
+        searchOrders.map((s) => ({
+          ...s,
+          createdAt: {
+            nanoseconds: (s as any).createdAt["_nanoseconds"],
+            seconds: (s as any).createdAt["_seconds"],
+          },
+        }))
+      );
+    } else {
+      setDispayedOrders(orders);
+    }
+  }, [orders, searchOrders]);
+
+  useEffect(() => {
+    if (!search) setSearchOrders([]);
+  }, [search]);
 
   const handleSearch = () => {
     if (search) {
@@ -114,11 +133,24 @@ const PreviousOrder = ({ navigation, route }: homeProp) => {
       setSearchOrders([]);
     }
   };
+
+  const handleNextPage = () => {
+    if (page <= totalPages) setPage((p) => p + 1);
+  };
+
+  const handlePrevPage = () => {
+    setPage((p) => {
+      if (p > 1) return p - 1;
+      return p;
+    });
+  };
+
   const renderOrders = ({ item }: { item: orderType }) => (
     <TouchableOpacity
       onPress={() =>
         navigation.navigate("PreviousOrderDetail", {
           selectedOrder: JSON.stringify(item),
+          fromOrders: Boolean(isFromOrders),
         })
       }
     >
@@ -128,7 +160,7 @@ const PreviousOrder = ({ navigation, route }: homeProp) => {
           Order {item.id}
         </Text>
         {item.items.map((it) => (
-          <View style={styles.disheCont}>
+          <View key={it.id} style={styles.disheCont}>
             <Text style={[styles.disheText, { fontSize: 13 }]}>
               {it.foodName} x {it.quantity}
             </Text>
@@ -164,32 +196,130 @@ const PreviousOrder = ({ navigation, route }: homeProp) => {
   return (
     <View style={styles.main}>
       <View style={styles.header}>
-        <Header title="Previous Orders" navigation={navigation} />
+        <Header
+          title="Previous Orders"
+          onBackPressed={() => {
+            if (isFromOrders) {
+              navigation.pop(2);
+            } else {
+              navigation.goBack();
+            }
+          }}
+          navigation={navigation}
+        />
       </View>
       <View style={styles.ContentCont}>
-        {loading && (
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              flex: 1,
-              width: "100%",
-            }}
-          >
-            <ActivityIndicator size={28} color={Colors.black} animating />
+        {(!searchLoading || !loading) && (
+          <View style={{ width: "100%", padding: 10 }}>
+            <Button
+              title="search"
+              containerStyle={{
+                position: "absolute",
+                right: 0,
+                top: 10,
+                zIndex: 20,
+              }}
+              onPress={handleSearch}
+              buttonStyle={{ backgroundColor: "#bbbbbb" }}
+            />
+            <TextInput
+              value={search}
+              onChangeText={(text) => {
+                setSearch(text);
+              }}
+              placeholder="Search an order with id, delivery location, date (*/*/****)"
+              placeholderTextColor={"#aaa"}
+              style={{
+                width: "100%",
+                padding: 5,
+                paddingRight: 80,
+                fontSize: 12,
+                borderColor: "#aaaaaa44",
+                borderWidth: 1,
+                borderRadius: 10,
+              }}
+            />
           </View>
         )}
-        {!!orders.length && !loading && (
-          <FlatList
-            renderItem={renderOrders}
-            data={orders}
-            onEndReached={handleOnScrolledToEnd}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 30 }}
-          />
+        {(loading || searchLoading) && (
+          <>
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                flex: 1,
+                width: "100%",
+              }}
+            >
+              <ActivityIndicator size={28} color={Colors.black} animating />
+            </View>
+          </>
         )}
-        {!loading && !orders.length && (
+        {!!displayedOrders.length && !loading && !searchLoading && (
+          <>
+            <FlatList
+              renderItem={renderOrders}
+              data={displayedOrders}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 30 }}
+            />
+            {!searchOrders.length && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: 10,
+                  backgroundColor: "#dddddd44",
+                  borderRadius: 5,
+                }}
+              >
+                <Text style={{ ...Fonts.body5, fontSize: 10, color: "#333" }}>
+                  {page} of {totalPages}
+                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Button
+                    title="Prev"
+                    disabled={page <= 1}
+                    containerStyle={{ margin: 2 }}
+                    onPress={() => {
+                      handlePrevPage();
+                    }}
+                    titleStyle={{ color: "#555" }}
+                    buttonStyle={{ backgroundColor: "#bbb" }}
+                    icon={
+                      <AntDesign
+                        size={18}
+                        color={page <= 1 ? "#aaa" : "#333"}
+                        name="left"
+                      />
+                    }
+                  />
+                  <Button
+                    title="Next"
+                    containerStyle={{ margin: 2 }}
+                    disabled={page >= totalPages}
+                    titleStyle={{ color: "#555" }}
+                    onPress={() => {
+                      handleNextPage();
+                    }}
+                    buttonStyle={{ backgroundColor: "#bbb" }}
+                    iconPosition="right"
+                    icon={
+                      <AntDesign
+                        size={18}
+                        color={page >= totalPages ? "#aaa" : "#333"}
+                        name="right"
+                      />
+                    }
+                  />
+                </View>
+              </View>
+            )}
+          </>
+        )}
+        {!loading && !orders.length && page == 1 && (
           <View
             style={{
               justifyContent: "center",

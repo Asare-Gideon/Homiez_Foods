@@ -60,6 +60,7 @@ export type HomeParams = {
   Help: undefined;
   PreviousOrderDetail: {
     selectedOrder: string;
+    fromOrders?: boolean;
   };
   ProcessPreviousOrder: {
     prevOrder: string;
@@ -82,8 +83,15 @@ export type homeProp = StackScreenProps<HomeParams, "Home">;
 export type headerProp = {
   title: string;
   navigation: StackNavigationProp<HomeParams, "Home">;
+  onBackPressed?: () => void;
 };
 
 export enum notificationTypes {
   order,
+}
+
+export enum paymentMethods {
+  manual = 1,
+  agent,
+  electronic,
 }

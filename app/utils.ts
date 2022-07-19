@@ -13,6 +13,7 @@ export async function schedulePushNotification(
       title: title,
       body: body,
       ...(data && ({ data } as object)),
+      sound: "default",
     },
     trigger: { seconds: delay },
   });
@@ -48,4 +49,25 @@ export async function registerForPushNotificationsAsync() {
   }
 
   return token;
+}
+
+export function getAnalyticsFromData(
+  data: any,
+  title: string,
+  afterTitle: string = ""
+) {
+  const today = new Date();
+  return {
+    [`${title}Today`]:
+      data[
+        `${title}${today.getDate()}-${
+          today.getMonth() + 1
+        }-${today.getFullYear()}${afterTitle}`
+      ],
+    [`${title}Month`]:
+      data[
+        `${title}${today.getMonth() + 1}-${today.getFullYear()}${afterTitle}`
+      ],
+    [`${title}Year`]: data[`${title}${today.getFullYear()}${afterTitle}`],
+  };
 }

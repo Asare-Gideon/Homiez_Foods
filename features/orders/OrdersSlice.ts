@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { auth } from "../../app/Firebase";
 import { RootState } from "../../app/store/store";
-import { getOrdersApi, placeOrderManualApi } from "./OrdersApi";
+import { getOrdersApi, placeOrderApi } from "./OrdersApi";
 
 export type orderLocationType = {
   locationStreet: string;
@@ -25,6 +25,7 @@ export type orderType = {
   hasRefCode?: boolean;
   failed?: boolean;
   completed?: boolean;
+  method?: number;
   viewed?: boolean;
   ongoing?: boolean;
   location?: orderLocationType;
@@ -115,17 +116,18 @@ export const getOrders = createAsyncThunk(
   }
 );
 
-export const placeOrderManual = createAsyncThunk(
+export const placeOrder = createAsyncThunk(
   "orders/add",
   async (data: {
     foods: { id: string; quantity: number }[];
     locationStreet: string;
+    agentPay?: boolean;
     locationLngLat: {
       longitude: number;
       latitude: number;
     };
   }) => {
-    const res = await placeOrderManualApi(data);
+    const res = await placeOrderApi(data);
     return res;
   }
 );
@@ -176,7 +178,7 @@ const slice = createSlice({
           state.lastDoc = action.payload.lastDoc;
       })
       .addCase(
-        placeOrderManual.fulfilled,
+        placeOrder.fulfilled,
         (state, action: PayloadAction<orderType>) => {
           state.orders[0].data.unshift(action.payload);
         }
@@ -212,6 +214,7 @@ export const selectOrders = (page: number) => {
 
 export const selectProcessingOrders = (state: RootState) => {
   const processingOrders: orderType[] = [];
+  console.log("orders =======> ", state.orders.orders);
   state.orders.orders.forEach((order) => {
     order.data.forEach((o) => {
       if (!o.completed && !o.failed) {

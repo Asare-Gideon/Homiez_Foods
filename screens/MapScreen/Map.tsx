@@ -53,14 +53,11 @@ const Map = ({ navigation }: homeProp) => {
     })();
   }, []);
 
-  console.log("from location =>", fromLocation);
-  console.log("location => ", location);
   const handleCall = () => {
     const url = `tel://${customerCallPhone}`;
     Linking.openURL(url);
   };
 
-  console.log(selectedOrder);
   return (
     <View style={styles.main}>
       <View style={styles.backBtnCont}>
@@ -156,7 +153,10 @@ const Map = ({ navigation }: homeProp) => {
                     style={{
                       marginRight: 10,
                       width: "100%",
-                      borderColor: Colors.primary,
+                      borderColor:
+                        selectedOrder?.id === item.id
+                          ? "green"
+                          : Colors.darkgray,
                       padding: 5,
                       borderWidth: 1,
                       borderRadius: 5,

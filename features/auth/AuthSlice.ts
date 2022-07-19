@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../app/store/store";
+import { userType } from "../../hooks/useFirebaseAuth";
 
 export type agentType = {
   uid: string;
@@ -11,6 +12,7 @@ export type agentType = {
   sales?: number;
   profit?: number;
   orders?: number;
+  references?: number;
   withdrawn?: number;
   withdrawals?: {
     amount: number;
@@ -28,11 +30,13 @@ export type agentType = {
 interface state {
   expoToken: string | undefined;
   agent: agentType | null;
+  userData: userType | null;
 }
 
 const initialState: state = {
   expoToken: "",
   agent: null,
+  userData: null,
 };
 
 const slice = createSlice({
@@ -45,15 +49,20 @@ const slice = createSlice({
     setAgent: (state, action: PayloadAction<agentType>) => {
       state.agent = action.payload;
     },
+    setUserData: (state, action: PayloadAction<userType | null>) => {
+      state.userData = action.payload;
+    },
     cleanAgent: (state) => {
       state.agent = null;
     },
   },
 });
 
-export const { setExpoToken, setAgent } = slice.actions;
+export const { setExpoToken, setAgent, setUserData } = slice.actions;
 
 export const selectExpoToken = (state: RootState) => state.auth.expoToken;
+
+export const selectUserData = (state: RootState) => state.auth.userData;
 
 export const selectAgent = (state: RootState) => state.auth.agent;
 

@@ -1,4 +1,4 @@
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo, Fontisto } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
@@ -75,8 +75,10 @@ const CartsItem = ({ title, image, price, quantity, id }: cartsProp) => {
           }}
         >
           <View>
-            <Text style={{ ...Fonts.body2 }}>{textUpdate}</Text>
-            <Text style={{ color: Colors.deepDarkGray }}>{titleUpdate}</Text>
+            <Text style={{ ...Fonts.body2, fontSize: 14 }}>{textUpdate}</Text>
+            <Text style={{ color: Colors.deepDarkGray, fontSize: 13 }}>
+              {titleUpdate}
+            </Text>
           </View>
           <TouchableOpacity
             style={{
@@ -100,6 +102,7 @@ const CartsItem = ({ title, image, price, quantity, id }: cartsProp) => {
           <Text
             style={{
               ...Fonts.body2,
+              fontSize: 13,
               color: Colors.darkgray,
             }}
           >

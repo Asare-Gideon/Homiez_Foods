@@ -21,7 +21,7 @@ import bottomNavigation from "../../features/utilitySlice/bottomSlice";
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["foods", "categories", "orders", "appConfig", "carts"],
+  whitelist: ["auth", "foods", "categories", "orders", "appConfig", "carts"],
 };
 
 const rootReducer = combineReducers({

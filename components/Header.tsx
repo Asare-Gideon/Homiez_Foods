@@ -5,12 +5,15 @@ import { Colors } from "react-native/Libraries/NewAppScreen";
 import { Fonts } from "../constants/Layout";
 import { headerProp } from "../types";
 
-const Header = ({ navigation, title }: headerProp) => {
+const Header = ({ navigation, title, onBackPressed }: headerProp) => {
   return (
     <View style={styles.header}>
       <TouchableOpacity
         style={styles.headerBtn}
-        onPress={() => navigation.goBack()}
+        onPress={() => {
+          if (onBackPressed) onBackPressed();
+          else navigation.goBack();
+        }}
       >
         <AntDesign name="arrowleft" color={Colors.white} size={25} />
       </TouchableOpacity>

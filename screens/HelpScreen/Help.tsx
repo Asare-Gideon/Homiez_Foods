@@ -113,8 +113,9 @@ const Help = ({ navigation }: homeProp) => {
                 ]}
               >
                 Also after an order, there will be a locate icon on the top side
-                of the screen that can be used to track the order, and make a
-                call if order is delayed.
+                of the home screen that can be used to track the order, and make
+                a call if order is delayed. Features are at the moment, limited,
+                but will undergo updates soon.
               </Text>
             </Text>
 

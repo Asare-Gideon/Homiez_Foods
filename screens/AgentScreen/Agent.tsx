@@ -26,6 +26,7 @@ import { useDispatch } from "react-redux";
 import { getIdToken } from "firebase/auth";
 import axios from "../../app/axios";
 import moment from "moment";
+import { getAnalyticsFromData } from "../../app/utils";
 
 const Agent = ({ navigation }: homeProp) => {
   const dispatch = useDispatch();
@@ -35,25 +36,33 @@ const Agent = ({ navigation }: homeProp) => {
   const agent = useAppSelector(selectAgent);
   const [agentLoading, setAgentLoading] = useState(true);
   const [error, setError] = useState("");
+  const [analyticsData, setAnalyticsData] = useState({
+    ordersToday: 0,
+    ordersMonth: 0,
+    ordersYear: 0,
+  });
   useEffect(() => {
     (async () => {
       if (completed && user && auth.currentUser) {
         const token = await getIdToken(auth.currentUser);
         const res = await axios.get(`/users/getAgentInfo?token=${token}`);
-        console.log("agentInfo =========> ", res.data);
         setAgentLoading(false);
         if (res.data.error) return setError("There was an error");
         dispatch(setAgent(res.data));
       }
     })();
   }, [isFocused, user, completed]);
-
-  console.log(agentLoading);
+  useEffect(() => {
+    if (agent) {
+      const analyticsData = getAnalyticsFromData(agent, "orders") as any;
+      setAnalyticsData(analyticsData);
+    }
+  }, [agent]);
 
   const handleShare = () => {
     Share.share({
       message: `homiezfoods.com/?rc=${agent?.refCode}`,
-      url: `homiezfoods.com/?rc=${agent?.refCode}`,
+      url: `https://homiezfoods.com/?rc=${agent?.refCode}`,
       title: "Share Your Link",
     });
   };
@@ -79,6 +88,19 @@ const Agent = ({ navigation }: homeProp) => {
         <Header title="Agent Console" navigation={navigation} />
       </View>
       <ScrollView style={styles.contentCont}>
+        {agentLoading && (
+          <View
+            style={{
+              flex: 1,
+              width: "100%",
+              height: Sizes.height - 100,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator animating size={28} color="#000" />
+          </View>
+        )}
         {completed && !user && (
           <View
             style={{
@@ -96,6 +118,7 @@ const Agent = ({ navigation }: homeProp) => {
             style={{
               flex: 1,
               width: "100%",
+              height: Sizes.height - 60,
               justifyContent: "center",
               alignItems: "center",
             }}
@@ -120,6 +143,40 @@ const Agent = ({ navigation }: homeProp) => {
             <View style={styles.amountCont}>
               <Text style={styles.amountText}>Amount Withdrawn: </Text>
               <Text style={styles.amountText}>GH₵ {agent?.withdrawn || 0}</Text>
+            </View>
+            <View style={styles.amountCont}>
+              <Text style={styles.amountText}>Your Refcode: </Text>
+              <Text style={styles.amountText}>{agent?.refCode}</Text>
+            </View>
+            <View style={styles.amountCont}>
+              <Text style={styles.amountText}>Users Referenced: </Text>
+              <Text style={styles.amountText}>{agent?.references || 0}</Text>
+            </View>
+            <View style={styles.amountCont}>
+              <Text style={styles.amountText}>Orders Referenced Today: </Text>
+              <Text style={styles.amountText}>
+                {analyticsData["ordersToday"] || 0}
+              </Text>
+            </View>
+            <View style={styles.amountCont}>
+              <Text style={styles.amountText}>
+                Orders Referenced This Month:{" "}
+              </Text>
+              <Text style={styles.amountText}>
+                {analyticsData["ordersMonth"] || 0}
+              </Text>
+            </View>
+            <View style={styles.amountCont}>
+              <Text style={styles.amountText}>
+                Orders Referenced This Year:{" "}
+              </Text>
+              <Text style={styles.amountText}>
+                {analyticsData["ordersYear"] || 0}
+              </Text>
+            </View>
+            <View style={styles.amountCont}>
+              <Text style={styles.amountText}>Orders Referenced Total: </Text>
+              <Text style={styles.amountText}>{agent?.orders || 0}</Text>
             </View>
 
             <Text style={styles.amountText}>Withdrawal History</Text>
@@ -244,7 +301,7 @@ const styles = StyleSheet.create({
   },
   shareBtnCont: {
     position: "absolute",
-    bottom: 160,
+    bottom: 20,
     left: 0,
     right: 0,
     alignItems: "center",
@@ -307,6 +364,7 @@ const styles = StyleSheet.create({
   contentCont: {
     flex: 1,
     backgroundColor: Colors.warmWhite,
+    paddingBottom: 25,
     padding: 15,
   },
 });

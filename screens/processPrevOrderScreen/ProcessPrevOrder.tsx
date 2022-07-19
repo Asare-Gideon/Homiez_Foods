@@ -23,13 +23,14 @@ import {
   clearCart,
   selectCarts,
 } from "../../features/cart/cartSlice";
-import { orderType, placeOrderManual } from "../../features/orders/OrdersSlice";
+import { orderType, placeOrder } from "../../features/orders/OrdersSlice";
 import AnimatedLottieView from "lottie-react-native";
-import { Button } from "react-native-elements";
+import { Button, CheckBox } from "react-native-elements";
 import useFirebaseAuth from "../../hooks/useFirebaseAuth";
 import axios from "../../app/axios";
 import MapView from "react-native-maps";
 import useNotificationToken from "../../hooks/useNotificationToken";
+import SnackBar from "react-native-snackbar-component";
 import { schedulePushNotification } from "../../app/utils";
 import { StackActions } from "@react-navigation/native";
 
@@ -45,6 +46,8 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
   const [locationModal, setLocationModal] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationStreet, setLocationStreet] = useState("");
+  const [agentPay, setAgentPay] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const { notification, response: notificationReponse } =
     useNotificationToken();
 
@@ -66,14 +69,24 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
   }, [cartItems]);
 
   useEffect(() => {
+    if (error) setSnackbarMessage(error);
+  }, [error]);
+
+  useEffect(() => {
+    if (newOrder) {
+      setTimeout(() => {
+        navigation.pop();
+      }, 1000);
+    }
+  }, [newOrder]);
+
+  useEffect(() => {
     if (notification) {
       const notificationData = notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.dispatch(
-          StackActions.replace("PreviousOrders", {
-            fromOrders: true,
-          })
-        );
+        navigation.navigate("PreviousOrders", {
+          fromOrders: true,
+        });
       }
     }
   }, [notification]);
@@ -102,11 +115,9 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
       const notificationData =
         notificationReponse.notification.request.content.data;
       if (notificationData.type === notificationTypes.order) {
-        navigation.dispatch(
-          StackActions.replace("PreviousOrders", {
-            fromOrders: true,
-          })
-        );
+        navigation.navigate("PreviousOrders", {
+          fromOrders: true,
+        });
       }
     }
   }, [notificationReponse]);
@@ -141,7 +152,8 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
     }
   }, [locationStreet]);
 
-  const handlePayManually = async () => {
+  const handlePay = async () => {
+    setError("");
     if (locationStreet && locationLngLat && cartItems) {
       setPayManualLoading(true);
       const foods: { id: string; quantity: number }[] = cartItems.map((c) => ({
@@ -149,7 +161,7 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
         quantity: c?.quantity || 1,
       }));
       const res = await dispatch(
-        placeOrderManual({ foods, locationStreet, locationLngLat })
+        placeOrder({ foods, locationStreet, locationLngLat, agentPay })
       );
       setPayManualLoading(false);
       if (res.meta.requestStatus === "rejected")
@@ -189,6 +201,16 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
   //
   return (
     <>
+      <SnackBar
+        visible={Boolean(snackbarMessage)}
+        textMessage={snackbarMessage}
+        backgroundColor={error ? "red" : "green"}
+        accentColor="white"
+        actionHandler={() => {
+          setSnackbarMessage("");
+        }}
+        actionText="Close"
+      />
       {Boolean(newOrder) && (
         <>
           <View
@@ -270,7 +292,7 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
                     >
                       <Text style={{ ...Fonts.body3 }}>{item.foodName}</Text>
                       <Text style={{ ...Fonts.body3, fontWeight: "bold" }}>
-                        ₵{item.price}
+                        ₵{item.price}x{item.quantity}
                       </Text>
                     </View>
                   ))}
@@ -304,11 +326,9 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
                     }}
                     onPress={() => {
                       setNewOrder(null);
-                      navigation.dispatch(
-                        StackActions.replace("PreviousOrders", {
-                          fromOrders: true,
-                        })
-                      );
+                      navigation.navigate("PreviousOrders", {
+                        fromOrders: true,
+                      });
                     }}
                   />
                 </View>
@@ -411,6 +431,17 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
         {completed && user && !loading && cartItems.length ? (
           <>
             <ScrollView style={orderStyle.contentContainer}>
+              {user.agent && (
+                <>
+                  <CheckBox
+                    title="It appears that you are an agent, do you want to pay through your agent account?"
+                    checked={agentPay}
+                    onPress={() => {
+                      setAgentPay(!agentPay);
+                    }}
+                  />
+                </>
+              )}
               <Button
                 title="Set Your Location"
                 onPress={() => setLocationModal(true)}
@@ -445,13 +476,15 @@ const ProcessPrevOrder = ({ navigation, route }: homeProp) => {
                       orderStyle.orderBtn,
                       { opacity: !locationLngLat || !locationStreet ? 0.5 : 1 },
                     ]}
-                    onPress={() => handlePayManually()}
+                    onPress={() => handlePay()}
                   >
                     {payManualLoading ? (
                       <ActivityIndicator animating size={28} color="#222" />
                     ) : (
                       <Text style={orderStyle.orderBtnText}>
-                        Payment On Delivery
+                        {agentPay
+                          ? "Pay With Agent Acount"
+                          : "Payment On Delivery"}
                       </Text>
                     )}
                   </TouchableHighlight>

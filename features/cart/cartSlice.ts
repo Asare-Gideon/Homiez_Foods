@@ -25,6 +25,9 @@ const slice = createSlice({
       const indx = state.carts.findIndex((s) => s.id === action.payload.id);
       if (indx === -1) state.carts.unshift(action.payload);
     },
+    setCart: (state, action: PayloadAction<cartItemType[]>) => {
+      state.carts = action.payload;
+    },
     setCartItemQuantity: (
       state,
       action: PayloadAction<{ id: string; quantity: number }>
@@ -44,8 +47,13 @@ const slice = createSlice({
   },
 });
 
-export const { addToCart, setCartItemQuantity, clearCart, removeFromCart } =
-  slice.actions;
+export const {
+  addToCart,
+  setCartItemQuantity,
+  clearCart,
+  removeFromCart,
+  setCart,
+} = slice.actions;
 
 export const selectCarts = (state: RootState) => state.carts.carts;
 

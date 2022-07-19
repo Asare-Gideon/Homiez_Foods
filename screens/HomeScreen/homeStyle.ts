@@ -23,11 +23,11 @@ export const homeStyle = StyleSheet.create({
     color: Colors.warmWhite,
     textAlign: "center",
     ...Fonts.body2,
-    fontSize: 18,
+    fontSize: 14,
   },
   recomText: {
     ...Fonts.style,
-    fontSize: 22,
+    fontSize: 16,
     marginTop: 10,
     color: Colors.darkgray,
     paddingLeft: 10,
@@ -54,7 +54,7 @@ export const homeStyle = StyleSheet.create({
   catHeaderText: {
     ...Fonts.style,
     color: Colors.darkgray,
-    fontSize: 20,
+    fontSize: 16,
   },
   btnMid: {
     borderTopWidth: 0.2,
@@ -75,7 +75,7 @@ export const homeStyle = StyleSheet.create({
   },
   recentText: {
     ...Fonts.h3,
-    fontSize: 18,
+    fontSize: 14,
     color: Colors.deepDarkGray,
     marginLeft: 10,
   },

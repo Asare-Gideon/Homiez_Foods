@@ -1,6 +1,9 @@
 import { onAuthStateChanged, Unsubscribe, User } from "firebase/auth";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { auth } from "../app/Firebase";
+import { auth, db } from "../app/Firebase";
+import { useAppDispatch } from "../app/reduxHooks/hooks";
+import { setUserData } from "../features/auth/AuthSlice";
 
 export type userType = {
   uid: string;
@@ -8,10 +11,12 @@ export type userType = {
   phone: string | null;
   email: string | null;
   admin?: boolean;
+  ordersCount?: number;
   superadmin?: boolean;
   agent?: boolean;
 };
 const useFirebaseAuth = () => {
+  const dispatch = useAppDispatch();
   const [completed, setCompleted] = useState(false);
   const [user, setUser] = useState<userType | null>(null);
   const [error, setError] = useState("");
@@ -31,6 +36,16 @@ const useFirebaseAuth = () => {
         };
         setUser(u);
         setCompleted(true);
+        try {
+          const q = query(collection(db, "users"), where("uid", "==", u.uid));
+          const userDataRes = await getDocs(q);
+          if (!userDataRes.empty) {
+            const userData = userDataRes.docs[0].data() as userType;
+            dispatch(setUserData(userData));
+          }
+        } catch (err) {
+          console.log(err);
+        }
       } catch (err) {
         console.log("user state changed err ============> ", err);
         setError("There was an error, please try again");
@@ -39,6 +54,7 @@ const useFirebaseAuth = () => {
     } else {
       setUser(user);
       setCompleted(true);
+      dispatch(setUserData(null));
     }
   };
   useEffect(() => {
